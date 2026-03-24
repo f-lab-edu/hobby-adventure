@@ -1,0 +1,27 @@
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Build
+/build/
+target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+
+# Gradle
+.gradle/
+
+# Mac
+*.DS_Store
+
+# Windows
+desktop.ini
