@@ -25,7 +25,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Test
     void signup_호출_시_비밀번호가_암호화되어_insert된다() {
