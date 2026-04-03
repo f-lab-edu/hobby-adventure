@@ -16,7 +16,7 @@ public class UserService {
 
     public void signup(SignupRequest request) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        User user = new User(request.getEmail(), encodedPassword, request.getNickname());
+        User user = User.create(request.getEmail(), encodedPassword, request.getNickname());
         userMapper.insert(user);
     }
 }

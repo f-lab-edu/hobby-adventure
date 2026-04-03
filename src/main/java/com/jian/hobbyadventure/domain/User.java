@@ -15,20 +15,12 @@ public class User {
     private String nickname;
     private LocalDateTime createdAt;
 
-    // 회원가입용 — userId, createdAt은 DB에서 자동 생성
-    public User(String email, String password, String nickname) {
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-    }
-
-    // 조회용 — MyBatis <constructor> 매핑 시 사용
-    public User(Long userId, String email, String password, String nickname, LocalDateTime createdAt) {
-        this.userId = userId;
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.createdAt = createdAt;
+    public static User create(String email, String password, String nickname) {
+        User user = new User();
+        user.email = email;
+        user.password = password;
+        user.nickname = nickname;
+        return user;
     }
 
     // TODO: equals/hashCode는 필요해질 경우 기준 정의 후 추가

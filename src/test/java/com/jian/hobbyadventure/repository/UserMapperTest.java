@@ -19,7 +19,7 @@ class UserMapperTest {
 
     @Test
     void insert_성공_시_userId가_채워진다() {
-        User user = new User("test@example.com", "encodedPassword", "닉네임");
+        User user = User.create("test@example.com", "encodedPassword", "닉네임");
 
         userMapper.insert(user);
 
@@ -28,7 +28,7 @@ class UserMapperTest {
 
     @Test
     void insert_성공_시_DB에_저장된다() {
-        User user = new User("test@example.com", "encodedPassword", "닉네임");
+        User user = User.create("test@example.com", "encodedPassword", "닉네임");
 
         userMapper.insert(user);
 
