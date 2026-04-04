@@ -63,7 +63,7 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.signup(request))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
-                .isEqualTo(ErrorCode.DUPLICATE_EMAIL);
+                .isEqualTo(ErrorCode.DUPLICATED);
     }
 
     @Test
@@ -74,7 +74,7 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.signup(request))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
-                .isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
+                .isEqualTo(ErrorCode.DUPLICATED);
     }
 
     @Test
@@ -86,6 +86,6 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.signup(request))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
-                .isEqualTo(ErrorCode.DUPLICATE_EMAIL_OR_NICKNAME);
+                .isEqualTo(ErrorCode.DUPLICATED);
     }
 }

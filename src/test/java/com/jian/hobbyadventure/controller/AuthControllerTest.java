@@ -134,26 +134,26 @@ class AuthControllerTest {
     @Test
     void signup_이메일_중복_시_409를_반환한다() throws Exception {
         SignupRequest request = new SignupRequest("test@example.com", "Abcd1234!", "닉네임");
-        doThrow(new BusinessException(ErrorCode.DUPLICATE_EMAIL))
+        doThrow(new BusinessException(ErrorCode.DUPLICATED))
                 .when(userService).signup(any(SignupRequest.class));
 
         mockMvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("이미 사용 중인 이메일입니다."));
+                .andExpect(jsonPath("$.message").value("이미 사용 중인 값입니다."));
     }
 
     @Test
     void signup_닉네임_중복_시_409를_반환한다() throws Exception {
         SignupRequest request = new SignupRequest("test@example.com", "Abcd1234!", "닉네임");
-        doThrow(new BusinessException(ErrorCode.DUPLICATE_NICKNAME))
+        doThrow(new BusinessException(ErrorCode.DUPLICATED))
                 .when(userService).signup(any(SignupRequest.class));
 
         mockMvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("이미 사용 중인 닉네임입니다."));
+                .andExpect(jsonPath("$.message").value("이미 사용 중인 값입니다."));
     }
 }

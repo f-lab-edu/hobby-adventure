@@ -19,10 +19,10 @@ public class UserService {
 
     public void signup(SignupRequest request) {
         if (userMapper.existsByEmail(request.getEmail())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+            throw new BusinessException(ErrorCode.DUPLICATED);
         }
         if (userMapper.existsByNickname(request.getNickname())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
+            throw new BusinessException(ErrorCode.DUPLICATED);
         }
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -31,7 +31,7 @@ public class UserService {
         try {
             userMapper.insert(user);
         } catch (DuplicateKeyException e) {
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL_OR_NICKNAME);
+            throw new BusinessException(ErrorCode.DUPLICATED);
         }
     }
 }
