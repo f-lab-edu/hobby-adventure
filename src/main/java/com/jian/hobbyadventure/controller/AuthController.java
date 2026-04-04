@@ -6,6 +6,7 @@ import com.jian.hobbyadventure.dto.response.SignupResponse;
 import com.jian.hobbyadventure.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,6 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
         userService.signup(request);
-        return ResponseEntity.ok(ApiResponse.of(new SignupResponse(true)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(new SignupResponse(true)));
     }
 }

@@ -29,14 +29,14 @@ class AuthControllerTest {
     private UserService userService;
 
     @Test
-    void signup_성공_시_200_응답을_반환한다() throws Exception {
+    void signup_성공_시_201_응답을_반환한다() throws Exception {
         SignupRequest request = new SignupRequest("test@example.com", "Abcd1234!", "닉네임");
         doNothing().when(userService).signup(any(SignupRequest.class));
 
         mockMvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.success").value(true));
     }
 }
