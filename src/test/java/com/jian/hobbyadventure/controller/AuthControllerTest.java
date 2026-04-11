@@ -84,7 +84,7 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상 32자 이하로 입력해주세요."));
+                .andExpect(jsonPath("$.message").value("비밀번호는 8자 이상이어야 합니다."));
     }
 
     @Test
@@ -95,7 +95,40 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다."));
+                .andExpect(jsonPath("$.message").value("비밀번호는 특수문자를 포함해야 합니다."));
+    }
+
+    @Test
+    void signup_비밀번호_영문자_없을_시_400을_반환한다() throws Exception {
+        SignupRequest request = new SignupRequest("test@example.com", "12345678!", "닉네임");
+
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("비밀번호는 영문자를 포함해야 합니다."));
+    }
+
+    @Test
+    void signup_비밀번호_숫자_없을_시_400을_반환한다() throws Exception {
+        SignupRequest request = new SignupRequest("test@example.com", "Abcdefgh!", "닉네임");
+
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("비밀번호는 숫자를 포함해야 합니다."));
+    }
+
+    @Test
+    void signup_비밀번호_32자_초과_시_400을_반환한다() throws Exception {
+        SignupRequest request = new SignupRequest("test@example.com", "Abcd1234!Abcd1234!Abcd1234!Abcd12!", "닉네임");
+
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("비밀번호는 32자 이하여야 합니다."));
     }
 
     @Test
