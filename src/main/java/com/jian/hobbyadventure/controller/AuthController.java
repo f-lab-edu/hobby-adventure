@@ -1,11 +1,13 @@
 package com.jian.hobbyadventure.controller;
 
 import com.jian.hobbyadventure.common.response.CommonResponse;
+import com.jian.hobbyadventure.common.response.ErrorResponse;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
 import com.jian.hobbyadventure.dto.response.SignupResponse;
 import com.jian.hobbyadventure.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,8 +31,8 @@ public class AuthController {
     @Operation(summary = "회원가입")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", content = @Content, description = "입력값 검증 실패\n\n- 이메일: 누락 또는 형식 오류\n\n- 비밀번호: 누락 또는 규칙 위반 (8자 이상 32자 이하, 영문·숫자·특수문자 포함 필수)\n\n- 닉네임: 누락, 길이 위반 (2자 이상 12자 이하), 특수문자·공백 불가"),
-            @ApiResponse(responseCode = "409", content = @Content, description = "이메일 또는 닉네임 중복")
+            @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "입력값 검증 실패\n\n- 이메일: 누락 또는 형식 오류\n\n- 비밀번호: 누락 또는 규칙 위반 (8자 이상 32자 이하, 영문·숫자·특수문자 포함 필수)\n\n- 닉네임: 누락, 길이 위반 (2자 이상 12자 이하), 특수문자·공백 불가"),
+            @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "이메일 또는 닉네임 중복")
     })
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
