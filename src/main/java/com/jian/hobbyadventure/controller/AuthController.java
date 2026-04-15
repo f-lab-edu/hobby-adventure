@@ -32,6 +32,12 @@ public class AuthController {
 
     private final UserService userService;
 
+    @Operation(summary = "로그인")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "입력값 검증 실패\n\n- 이메일: 누락 또는 형식 오류\n\n- 비밀번호: 누락"),
+            @ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "이메일 또는 비밀번호 불일치")
+    })
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = userService.login(request);
