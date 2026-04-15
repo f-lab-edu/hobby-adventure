@@ -4,7 +4,8 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
 
-    DUPLICATED(HttpStatus.CONFLICT, "이미 사용 중인 값입니다.");
+    DUPLICATED(HttpStatus.CONFLICT, "이미 사용 중인 값입니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
 
     private final HttpStatus status;
     private final String message;
