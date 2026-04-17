@@ -5,6 +5,7 @@ import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.User;
 import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
+import com.jian.hobbyadventure.dto.response.DeleteAccountResponse;
 import com.jian.hobbyadventure.dto.response.LoginResponse;
 import com.jian.hobbyadventure.repository.UserMapper;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,29 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Test
+    void deleteAccount_성공_시_success가_true를_반환한다() {
+        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        when(userMapper.findById(1L)).thenReturn(Optional.of(user));
+
+        DeleteAccountResponse response = userService.deleteAccount(1L);
+
+        assertThat(response.isSuccess()).isTrue();
+        verify(userMapper).deleteById(1L);
+    }
+
+    @Test
+    void deleteAccount_존재하지_않는_userId_시_BusinessException을_던진다() {
+        when(userMapper.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.deleteAccount(1L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_FOUND);
+
+        verify(userMapper, never()).deleteById(any());
+    }
 
     @Test
     void login_성공_시_userId와_nickname을_반환한다() {
