@@ -2,7 +2,9 @@ package com.jian.hobbyadventure.controller;
 
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
+import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
+import com.jian.hobbyadventure.dto.response.LoginResponse;
 import com.jian.hobbyadventure.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +33,65 @@ class AuthControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @Test
+    void login_성공_시_200_응답을_반환한다() throws Exception {
+        LoginRequest request = new LoginRequest("test@example.com", "Abcd1234!");
+        when(userService.login(any(LoginRequest.class))).thenReturn(new LoginResponse(1L, "닉네임"));
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.userId").value(1L))
+                .andExpect(jsonPath("$.data.nickname").value("닉네임"));
+    }
+
+    @Test
+    void login_이메일_누락_시_400을_반환한다() throws Exception {
+        LoginRequest request = new LoginRequest(null, "Abcd1234!");
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("이메일을 입력해주세요."));
+    }
+
+    @Test
+    void login_이메일_형식_오류_시_400을_반환한다() throws Exception {
+        LoginRequest request = new LoginRequest("invalid-email", "Abcd1234!");
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("올바른 이메일 형식이 아닙니다."));
+    }
+
+    @Test
+    void login_비밀번호_누락_시_400을_반환한다() throws Exception {
+        LoginRequest request = new LoginRequest("test@example.com", null);
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("비밀번호를 입력해주세요."));
+    }
+
+    @Test
+    void login_인증_실패_시_401을_반환한다() throws Exception {
+        LoginRequest request = new LoginRequest("test@example.com", "Abcd1234!");
+        doThrow(new BusinessException(ErrorCode.INVALID_CREDENTIALS))
+                .when(userService).login(any(LoginRequest.class));
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("이메일 또는 비밀번호가 올바르지 않습니다."));
+    }
 
     @Test
     void signup_성공_시_201_응답을_반환한다() throws Exception {

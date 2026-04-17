@@ -3,7 +3,9 @@ package com.jian.hobbyadventure.service;
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.User;
+import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
+import com.jian.hobbyadventure.dto.response.LoginResponse;
 import com.jian.hobbyadventure.repository.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +15,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +37,43 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Test
+    void login_성공_시_userId와_nickname을_반환한다() {
+        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        LoginRequest request = new LoginRequest("test@example.com", "rawPassword");
+        when(userMapper.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
+
+        LoginResponse response = userService.login(request);
+
+        assertThat(response.getUserId()).isEqualTo(1L);
+        assertThat(response.getNickname()).isEqualTo("닉네임");
+    }
+
+    @Test
+    void login_존재하지_않는_이메일_시_BusinessException을_던진다() {
+        LoginRequest request = new LoginRequest("test@example.com", "rawPassword");
+        when(userMapper.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    @Test
+    void login_비밀번호_불일치_시_BusinessException을_던진다() {
+        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        LoginRequest request = new LoginRequest("test@example.com", "wrongPassword");
+        when(userMapper.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_CREDENTIALS);
+    }
 
     @Test
     void signup_호출_시_비밀번호가_암호화되어_insert된다() {
