@@ -5,6 +5,7 @@ import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.User;
 import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
+import com.jian.hobbyadventure.dto.response.DeleteAccountResponse;
 import com.jian.hobbyadventure.dto.response.LoginResponse;
 import com.jian.hobbyadventure.repository.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,14 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    public DeleteAccountResponse deleteAccount(Long userId) {
+        userMapper.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        userMapper.deleteById(userId);
+        return new DeleteAccountResponse(true);
+    }
 
     public LoginResponse login(LoginRequest request) {
         User user = userMapper.findByEmail(request.getEmail())

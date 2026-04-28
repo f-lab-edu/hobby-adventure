@@ -3,6 +3,7 @@ package com.jian.hobbyadventure.repository;
 import com.jian.hobbyadventure.domain.User;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -29,6 +30,19 @@ public interface UserMapper {
     })
     @Select("SELECT * FROM users WHERE email = #{email}")
     Optional<User> findByEmail(String email);
+
+    @ConstructorArgs({
+            @Arg(column = "user_id", javaType = Long.class),
+            @Arg(column = "email", javaType = String.class),
+            @Arg(column = "password", javaType = String.class),
+            @Arg(column = "nickname", javaType = String.class),
+            @Arg(column = "created_at", javaType = LocalDateTime.class)
+    })
+    @Select("SELECT * FROM users WHERE user_id = #{userId}")
+    Optional<User> findById(Long userId);
+
+    @Delete("DELETE FROM users WHERE user_id = #{userId}")
+    void deleteById(Long userId);
 
     @Insert("""
             INSERT INTO users (email, password, nickname)
