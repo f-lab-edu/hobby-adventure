@@ -29,6 +29,11 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "사용자 정보 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공"),
+            @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "존재하지 않는 사용자")
+    })
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse<UserProfileResponse>> getUserProfile(@PathVariable Long userId) {
         UserProfileResponse response = userService.getUserProfile(userId);
