@@ -1,3 +1,5 @@
+SET NAMES 'utf8mb4';
+
 CREATE TABLE users
 (
     user_id    BIGINT       NOT NULL AUTO_INCREMENT,
