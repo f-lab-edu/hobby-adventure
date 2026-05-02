@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
 import com.jian.hobbyadventure.dto.response.DeleteAccountResponse;
 import com.jian.hobbyadventure.dto.response.LoginResponse;
+import com.jian.hobbyadventure.dto.response.UserProfileResponse;
 import com.jian.hobbyadventure.repository.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +40,28 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Test
+    void getUserProfile_성공_시_userId_email_nickname을_반환한다() {
+        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        when(userMapper.findById(1L)).thenReturn(Optional.of(user));
+
+        UserProfileResponse response = userService.getUserProfile(1L);
+
+        assertThat(response.getUserId()).isEqualTo(1L);
+        assertThat(response.getEmail()).isEqualTo("test@example.com");
+        assertThat(response.getNickname()).isEqualTo("닉네임");
+    }
+
+    @Test
+    void getUserProfile_존재하지_않는_userId_시_BusinessException을_던진다() {
+        when(userMapper.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getUserProfile(1L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_FOUND);
+    }
 
     @Test
     void deleteAccount_성공_시_success가_true를_반환한다() {

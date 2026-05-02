@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.dto.request.LoginRequest;
 import com.jian.hobbyadventure.dto.request.SignupRequest;
 import com.jian.hobbyadventure.dto.response.DeleteAccountResponse;
 import com.jian.hobbyadventure.dto.response.LoginResponse;
+import com.jian.hobbyadventure.dto.response.UserProfileResponse;
 import com.jian.hobbyadventure.repository.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,6 +20,12 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    public UserProfileResponse getUserProfile(Long userId) {
+        User user = userMapper.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return UserProfileResponse.from(user);
+    }
 
     public DeleteAccountResponse deleteAccount(Long userId) {
         userMapper.findById(userId)
