@@ -15,7 +15,7 @@ public class PageMeta {
 
     public static PageMeta of(int page, int size, long totalElements) {
         int totalPages = (int) Math.ceil((double) totalElements / size);
-        boolean hasNext = page < totalPages - 1;
+        boolean hasNext = page < totalPages;
         return new PageMeta(page, size, totalElements, totalPages, hasNext);
     }
 }
