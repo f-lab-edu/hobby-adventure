@@ -10,3 +10,7 @@ springdoc:
     enabled: true
   api-docs:
     enabled: true
+
+app:
+  image:
+    upload-path: ./uploads/
