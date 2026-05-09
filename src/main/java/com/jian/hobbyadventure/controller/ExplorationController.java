@@ -1,5 +1,7 @@
 package com.jian.hobbyadventure.controller;
 
+import com.jian.hobbyadventure.common.response.CommonResponse;
+import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
 import com.jian.hobbyadventure.dto.response.PageResponse;
 import com.jian.hobbyadventure.service.ExplorationService;
@@ -20,5 +22,10 @@ public class ExplorationController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(explorationService.getExplorations(categoryId, page, size));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CommonResponse<ExplorationDetailResponse>> getExploration(@PathVariable Long id) {
+        return ResponseEntity.ok(CommonResponse.of(explorationService.getExploration(id)));
     }
 }

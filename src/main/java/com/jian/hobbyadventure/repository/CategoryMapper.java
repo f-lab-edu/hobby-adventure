@@ -20,6 +20,15 @@ public interface CategoryMapper {
     @Select("SELECT category_id, code, name, display_order FROM categories ORDER BY display_order")
     List<Category> findAll();
 
+    @ConstructorArgs({
+            @Arg(column = "category_id", javaType = Long.class),
+            @Arg(column = "code", javaType = String.class),
+            @Arg(column = "name", javaType = String.class),
+            @Arg(column = "display_order", javaType = int.class)
+    })
+    @Select("SELECT category_id, code, name, display_order FROM categories WHERE category_id = #{categoryId}")
+    Category findById(Long categoryId);
+
     @Select("SELECT EXISTS(SELECT 1 FROM categories WHERE category_id = #{categoryId})")
     boolean existsById(Long categoryId);
 }

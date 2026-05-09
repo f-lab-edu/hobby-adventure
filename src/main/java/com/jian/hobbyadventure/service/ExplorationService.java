@@ -4,6 +4,7 @@ import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
+import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
 import com.jian.hobbyadventure.dto.response.PageMeta;
 import com.jian.hobbyadventure.dto.response.PageResponse;
@@ -53,5 +54,12 @@ public class ExplorationService {
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
+    }
+
+    public ExplorationDetailResponse getExploration(Long id) {
+        Exploration exploration = explorationMapper.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        Category category = categoryMapper.findById(exploration.getCategoryId());
+        return ExplorationDetailResponse.from(exploration, category.getName(), imageBaseUrl);
     }
 }
