@@ -19,4 +19,7 @@ public interface CategoryMapper {
     })
     @Select("SELECT category_id, code, name, display_order FROM categories ORDER BY display_order")
     List<Category> findAll();
+
+    @Select("SELECT EXISTS(SELECT 1 FROM categories WHERE category_id = #{categoryId})")
+    boolean existsById(Long categoryId);
 }
