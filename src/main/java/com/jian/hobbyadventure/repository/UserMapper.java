@@ -15,6 +15,9 @@ import java.util.Optional;
 @Mapper
 public interface UserMapper {
 
+    @Select("SELECT EXISTS(SELECT 1 FROM users WHERE user_id = #{userId})")
+    boolean existsById(Long userId);
+
     @Select("SELECT EXISTS(SELECT 1 FROM users WHERE email = #{email})")
     boolean existsByEmail(String email);
 

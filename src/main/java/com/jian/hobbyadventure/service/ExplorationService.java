@@ -4,12 +4,16 @@ import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
+import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
 import com.jian.hobbyadventure.dto.response.PageMeta;
 import com.jian.hobbyadventure.dto.response.PageResponse;
+import com.jian.hobbyadventure.dto.response.StartExplorationResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
+import com.jian.hobbyadventure.repository.UserExplorationMapper;
+import com.jian.hobbyadventure.repository.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,8 @@ public class ExplorationService {
 
     private final ExplorationMapper explorationMapper;
     private final CategoryMapper categoryMapper;
+    private final UserMapper userMapper;
+    private final UserExplorationMapper userExplorationMapper;
 
     @Value("${app.image.base-url}")
     private String imageBaseUrl;
@@ -61,5 +67,18 @@ public class ExplorationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         Category category = categoryMapper.findById(exploration.getCategoryId());
         return ExplorationDetailResponse.from(exploration, category.getName(), imageBaseUrl);
+    }
+
+    public StartExplorationResponse startExploration(Long explorationId, Long userId) {
+        explorationMapper.findById(explorationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (!userMapper.existsById(userId)) {
+            throw new BusinessException(ErrorCode.NOT_FOUND);
+        }
+
+        UserExploration userExploration = UserExploration.create(userId, explorationId);
+        userExplorationMapper.insert(userExploration);
+        return new StartExplorationResponse(userExploration.getId());
     }
 }
