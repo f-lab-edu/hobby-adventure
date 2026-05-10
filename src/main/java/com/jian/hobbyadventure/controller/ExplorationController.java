@@ -3,7 +3,7 @@ package com.jian.hobbyadventure.controller;
 import com.jian.hobbyadventure.common.response.CommonResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
-import com.jian.hobbyadventure.dto.response.PageResponse;
+import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.dto.response.StartExplorationResponse;
 import com.jian.hobbyadventure.service.ExplorationService;
 import lombok.RequiredArgsConstructor;

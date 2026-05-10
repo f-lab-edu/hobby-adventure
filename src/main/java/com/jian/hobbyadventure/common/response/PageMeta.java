@@ -1,4 +1,4 @@
-package com.jian.hobbyadventure.dto.response;
+package com.jian.hobbyadventure.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
