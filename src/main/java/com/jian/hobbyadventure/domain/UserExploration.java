@@ -1,14 +1,14 @@
 package com.jian.hobbyadventure.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class UserExploration {
 
     private Long id;
@@ -20,9 +20,9 @@ public class UserExploration {
 
     public static UserExploration create(Long userId, Long explorationId) {
         UserExploration ue = new UserExploration();
-        ue.userId = userId;
-        ue.explorationId = explorationId;
-        ue.status = ExplorationStatus.STARTED;
+        ue.setUserId(userId);
+        ue.setExplorationId(explorationId);
+        ue.setStatus(ExplorationStatus.STARTED);
         return ue;
     }
 }

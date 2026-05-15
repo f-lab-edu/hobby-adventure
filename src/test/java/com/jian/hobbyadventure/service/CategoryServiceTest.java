@@ -23,11 +23,20 @@ class CategoryServiceTest {
     @InjectMocks
     private CategoryService categoryService;
 
+    private Category createCategory(Long id, String code, String name, int displayOrder) {
+        Category category = new Category();
+        category.setCategoryId(id);
+        category.setCode(code);
+        category.setName(name);
+        category.setDisplayOrder(displayOrder);
+        return category;
+    }
+
     @Test
     void getCategories_카테고리_목록을_반환한다() {
         List<Category> categories = List.of(
-                new Category(1L, "EXERCISE", "운동", 1),
-                new Category(2L, "VISIT", "방문", 2)
+                createCategory(1L, "EXERCISE", "운동", 1),
+                createCategory(2L, "VISIT", "방문", 2)
         );
         when(categoryMapper.findAll()).thenReturn(categories);
 

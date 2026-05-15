@@ -51,14 +51,31 @@ class ExplorationServiceTest {
         ReflectionTestUtils.setField(explorationService, "imageBaseUrl", "/images/");
     }
 
-    private Exploration exploration(Long id, Long categoryId) {
-        return new Exploration(id, categoryId, "탐험 제목", "explorations/test.jpg", "짧은 설명", "상세 설명", LocalDateTime.now());
+    private Exploration createExploration(Long id, Long categoryId) {
+        Exploration exploration = new Exploration();
+        exploration.setId(id);
+        exploration.setCategoryId(categoryId);
+        exploration.setTitle("탐험 제목");
+        exploration.setThumbnailUrl("explorations/test.jpg");
+        exploration.setShortDescription("짧은 설명");
+        exploration.setDescription("상세 설명");
+        exploration.setCreatedAt(LocalDateTime.now());
+        return exploration;
+    }
+
+    private Category createCategory(Long id, String code, String name, int displayOrder) {
+        Category category = new Category();
+        category.setCategoryId(id);
+        category.setCode(code);
+        category.setName(name);
+        category.setDisplayOrder(displayOrder);
+        return category;
     }
 
     @Test
     void getExplorations_categoryId가_null이면_전체_탐험_목록을_반환한다() {
-        List<Category> categories = List.of(new Category(1L, "EXERCISE", "운동", 1));
-        List<Exploration> explorations = List.of(exploration(1L, 1L));
+        List<Category> categories = List.of(createCategory(1L, "EXERCISE", "운동", 1));
+        List<Exploration> explorations = List.of(createExploration(1L, 1L));
         when(categoryMapper.findAll()).thenReturn(categories);
         when(explorationMapper.findAll(anyInt(), anyInt())).thenReturn(explorations);
         when(explorationMapper.countAll()).thenReturn(1L);
@@ -71,8 +88,8 @@ class ExplorationServiceTest {
 
     @Test
     void getExplorations_categoryId가_있으면_해당_카테고리의_탐험만_반환한다() {
-        List<Category> categories = List.of(new Category(1L, "EXERCISE", "운동", 1));
-        List<Exploration> explorations = List.of(exploration(1L, 1L));
+        List<Category> categories = List.of(createCategory(1L, "EXERCISE", "운동", 1));
+        List<Exploration> explorations = List.of(createExploration(1L, 1L));
         when(categoryMapper.findAll()).thenReturn(categories);
         when(explorationMapper.findByCategoryId(anyLong(), anyInt(), anyInt())).thenReturn(explorations);
         when(explorationMapper.countByCategoryId(anyLong())).thenReturn(1L);
@@ -95,8 +112,8 @@ class ExplorationServiceTest {
 
     @Test
     void getExploration_성공_시_탐험_상세를_반환한다() {
-        Exploration exploration = exploration(1L, 1L);
-        Category category = new Category(1L, "EXERCISE", "운동", 1);
+        Exploration exploration = createExploration(1L, 1L);
+        Category category = createCategory(1L, "EXERCISE", "운동", 1);
         when(explorationMapper.findById(1L)).thenReturn(Optional.of(exploration));
         when(categoryMapper.findById(1L)).thenReturn(category);
 
@@ -119,7 +136,7 @@ class ExplorationServiceTest {
 
     @Test
     void startExploration_성공_시_userExplorationMapper_insert가_호출된다() {
-        when(explorationMapper.findById(1L)).thenReturn(Optional.of(exploration(1L, 1L)));
+        when(explorationMapper.findById(1L)).thenReturn(Optional.of(createExploration(1L, 1L)));
         when(userMapper.existsById(1L)).thenReturn(true);
 
         explorationService.startExploration(1L, 1L);
@@ -139,7 +156,7 @@ class ExplorationServiceTest {
 
     @Test
     void startExploration_존재하지_않는_사용자_시_BusinessException을_던진다() {
-        when(explorationMapper.findById(1L)).thenReturn(Optional.of(exploration(1L, 1L)));
+        when(explorationMapper.findById(1L)).thenReturn(Optional.of(createExploration(1L, 1L)));
         when(userMapper.existsById(1L)).thenReturn(false);
 
         assertThatThrownBy(() -> explorationService.startExploration(1L, 1L))

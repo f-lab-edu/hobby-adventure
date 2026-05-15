@@ -1,14 +1,14 @@
 package com.jian.hobbyadventure.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     private Long userId;
@@ -19,9 +19,9 @@ public class User {
 
     public static User create(String email, String password, String nickname) {
         User user = new User();
-        user.email = email;
-        user.password = password;
-        user.nickname = nickname;
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setNickname(nickname);
         return user;
     }
 
