@@ -4,18 +4,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class User {
+public class User extends BaseEntity {
 
     private Long userId;
     private String email;
     private String password;
     private String nickname;
-    private LocalDateTime createdAt;
 
     public static User create(String email, String password, String nickname) {
         User user = new User();

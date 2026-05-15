@@ -9,13 +9,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserExploration {
+public class UserExploration extends BaseEntity {
 
     private Long id;
     private Long userId;
     private Long explorationId;
     private ExplorationStatus status;
-    private LocalDateTime createdAt;
     private LocalDateTime completedAt;
 
     public static UserExploration create(Long userId, Long explorationId) {
