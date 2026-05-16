@@ -41,9 +41,16 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    private User createUser() {
+        User user = User.create("test@example.com", "encodedPassword", "닉네임");
+        user.setUserId(1L);
+        user.setCreatedAt(LocalDateTime.now());
+        return user;
+    }
+
     @Test
     void getUserProfile_성공_시_userId_email_nickname을_반환한다() {
-        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        User user = createUser();
         when(userMapper.findById(1L)).thenReturn(Optional.of(user));
 
         UserProfileResponse response = userService.getUserProfile(1L);
@@ -65,7 +72,7 @@ class UserServiceTest {
 
     @Test
     void deleteAccount_성공_시_success가_true를_반환한다() {
-        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        User user = createUser();
         when(userMapper.findById(1L)).thenReturn(Optional.of(user));
 
         DeleteAccountResponse response = userService.deleteAccount(1L);
@@ -88,7 +95,7 @@ class UserServiceTest {
 
     @Test
     void login_성공_시_userId와_nickname을_반환한다() {
-        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        User user = createUser();
         LoginRequest request = new LoginRequest("test@example.com", "rawPassword");
         when(userMapper.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
@@ -112,7 +119,7 @@ class UserServiceTest {
 
     @Test
     void login_비밀번호_불일치_시_BusinessException을_던진다() {
-        User user = new User(1L, "test@example.com", "encodedPassword", "닉네임", LocalDateTime.now());
+        User user = createUser();
         LoginRequest request = new LoginRequest("test@example.com", "wrongPassword");
         when(userMapper.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);

@@ -1,15 +1,11 @@
 package com.jian.hobbyadventure.controller;
 
 import com.jian.hobbyadventure.common.response.CommonResponse;
-import com.jian.hobbyadventure.common.response.ErrorResponse;
 import com.jian.hobbyadventure.dto.response.DeleteAccountResponse;
 import com.jian.hobbyadventure.dto.response.UserProfileResponse;
 import com.jian.hobbyadventure.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "사용자 정보 조회")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공"),
-            @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "존재하지 않는 사용자")
-    })
+    @ApiResponse(responseCode = "200", description = "사용자 정보 조회 성공")
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse<UserProfileResponse>> getUserProfile(@PathVariable Long userId) {
         UserProfileResponse response = userService.getUserProfile(userId);
@@ -41,10 +34,7 @@ public class UserController {
     }
 
     @Operation(summary = "회원탈퇴")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "회원탈퇴 성공"),
-            @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResponse.class)), description = "존재하지 않는 사용자")
-    })
+    @ApiResponse(responseCode = "200", description = "회원탈퇴 성공")
     @DeleteMapping("/{userId}")
     public ResponseEntity<CommonResponse<DeleteAccountResponse>> deleteAccount(@PathVariable Long userId) {
         DeleteAccountResponse response = userService.deleteAccount(userId);

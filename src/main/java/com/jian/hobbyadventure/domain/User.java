@@ -1,27 +1,24 @@
 package com.jian.hobbyadventure.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class User {
+public class User extends BaseEntity {
 
     private Long userId;
     private String email;
     private String password;
     private String nickname;
-    private LocalDateTime createdAt;
 
     public static User create(String email, String password, String nickname) {
         User user = new User();
-        user.email = email;
-        user.password = password;
-        user.nickname = nickname;
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setNickname(nickname);
         return user;
     }
 
