@@ -91,7 +91,7 @@ class ExplorationServiceTest {
         List<Category> categories = List.of(createCategory(1L, "EXERCISE", "운동", 1));
         List<Exploration> explorations = List.of(createExploration(1L, 1L));
         when(categoryMapper.findAll()).thenReturn(categories);
-        when(explorationMapper.findByCategoryId(anyLong(), anyInt(), anyInt())).thenReturn(explorations);
+        when(explorationMapper.findAllByCategoryId(anyLong(), anyInt(), anyInt())).thenReturn(explorations);
         when(explorationMapper.countByCategoryId(anyLong())).thenReturn(1L);
 
         PageResponse<ExplorationListItemResponse> result = explorationService.getExplorations(1L, 1, 10);

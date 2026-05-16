@@ -51,7 +51,7 @@ public class ExplorationService {
             if (!categoryNameMap.containsKey(categoryId)) {
                 throw new BusinessException(ErrorCode.NOT_FOUND);
             }
-            explorations = explorationMapper.findByCategoryId(categoryId, size, offset);
+            explorations = explorationMapper.findAllByCategoryId(categoryId, size, offset);
             totalElements = explorationMapper.countByCategoryId(categoryId);
         }
 

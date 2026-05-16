@@ -15,7 +15,7 @@ public interface ExplorationMapper {
     List<Exploration> findAll(@Param("size") int size, @Param("offset") int offset);
 
     @Select("SELECT * FROM explorations WHERE category_id = #{categoryId} ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}")
-    List<Exploration> findByCategoryId(@Param("categoryId") Long categoryId, @Param("size") int size, @Param("offset") int offset);
+    List<Exploration> findAllByCategoryId(@Param("categoryId") Long categoryId, @Param("size") int size, @Param("offset") int offset);
 
     @Select("SELECT * FROM explorations WHERE id = #{id}")
     Optional<Exploration> findById(Long id);
