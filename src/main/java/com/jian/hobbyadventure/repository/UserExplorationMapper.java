@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,4 +35,7 @@ public interface UserExplorationMapper {
 
     @Select("SELECT * FROM user_explorations WHERE id = #{id}")
     Optional<UserExploration> findById(Long id);
+
+    @Update("UPDATE user_explorations SET status = 'COMPLETED', completed_at = NOW() WHERE id = #{id}")
+    void complete(Long id);
 }

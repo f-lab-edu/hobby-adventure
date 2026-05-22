@@ -8,6 +8,7 @@ import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
+import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
@@ -75,5 +76,22 @@ public class MyExplorationService {
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
         return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl);
+    }
+
+    public CompleteExplorationResponse completeExploration(Long userId, Long userExplorationId) {
+        UserExploration userExploration = userExplorationMapper.findById(userExplorationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (!userExploration.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        if (userExploration.getStatus() == ExplorationStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INVALID_STATE);
+        }
+
+        userExplorationMapper.complete(userExplorationId);
+
+        return new CompleteExplorationResponse(userExplorationId);
     }
 }
