@@ -28,8 +28,9 @@ public class GlobalExceptionHandler {
     }
 
     @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "403", description = "접근 권한 없음")
     @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스")
-    @ApiResponse(responseCode = "409", description = "리소스 중복")
+    @ApiResponse(responseCode = "409", description = "요청 충돌 (중복 또는 잘못된 상태)")
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         return ResponseEntity.status(e.getErrorCode().getStatus()).body(ErrorResponse.of(e.getMessage()));
