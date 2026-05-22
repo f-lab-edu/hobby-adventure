@@ -1,7 +1,9 @@
 package com.jian.hobbyadventure.controller;
 
+import com.jian.hobbyadventure.common.response.CommonResponse;
 import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
+import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.service.MyExplorationService;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +25,12 @@ public class MyExplorationController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(myExplorationService.getMyExplorations(userId, status, categoryId, page, size));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CommonResponse<MyExplorationDetailResponse>> getMyExploration(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(CommonResponse.of(myExplorationService.getMyExploration(userId, id)));
     }
 }

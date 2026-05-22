@@ -6,6 +6,9 @@ import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.UserExploration;
+import com.jian.hobbyadventure.common.exception.BusinessException;
+import com.jian.hobbyadventure.common.exception.ErrorCode;
+import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
@@ -56,5 +59,21 @@ public class MyExplorationService {
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
+    }
+
+    public MyExplorationDetailResponse getMyExploration(Long userId, Long userExplorationId) {
+        UserExploration userExploration = userExplorationMapper.findById(userExplorationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (!userExploration.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        Exploration exploration = explorationMapper.findById(userExploration.getExplorationId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        Category category = categoryMapper.findById(exploration.getCategoryId());
+
+        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl);
     }
 }
