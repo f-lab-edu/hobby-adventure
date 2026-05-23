@@ -25,4 +25,12 @@ public interface ExplorationMapper {
 
     @Select("SELECT COUNT(*) FROM explorations WHERE category_id = #{categoryId}")
     long countByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Select("SELECT id FROM explorations WHERE category_id = #{categoryId}")
+    List<Long> findIdsByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Select("<script>SELECT * FROM explorations WHERE id IN " +
+            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>#{id}</foreach>" +
+            "</script>")
+    List<Exploration> findByIdIn(@Param("ids") List<Long> ids);
 }
