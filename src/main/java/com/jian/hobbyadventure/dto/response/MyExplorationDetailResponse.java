@@ -27,7 +27,6 @@ public class MyExplorationDetailResponse {
 
     public static MyExplorationDetailResponse from(UserExploration ue, Exploration e, String categoryName, String imageBaseUrl) {
         String thumbnailUrl = e.getThumbnailUrl() != null ? imageBaseUrl + e.getThumbnailUrl() : null;
-        Boolean hasRecord = ue.getStatus() == ExplorationStatus.COMPLETED ? false : null;
         return new MyExplorationDetailResponse(
                 ue.getId(),
                 e.getId(),
@@ -39,7 +38,7 @@ public class MyExplorationDetailResponse {
                 ue.getStatus(),
                 ue.getCreatedAt(),
                 ue.getCompletedAt(),
-                hasRecord,
+                ue.hasRecord(),
                 null
         );
     }

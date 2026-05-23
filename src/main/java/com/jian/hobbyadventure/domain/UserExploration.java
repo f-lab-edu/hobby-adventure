@@ -24,4 +24,10 @@ public class UserExploration extends BaseEntity {
         ue.setStatus(ExplorationStatus.STARTED);
         return ue;
     }
+
+    // TODO: 기록 기능 미구현으로 false 고정. 기록 기능 추가 시 실제 기록 보유 여부를 반환하도록 변경
+    public Boolean hasRecord() {
+        if (this.status != ExplorationStatus.COMPLETED) return null;
+        return false;
+    }
 }
