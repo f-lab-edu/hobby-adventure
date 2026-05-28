@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/hobby_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: hobby_user
+    password: hobby_pass
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+app:
+  image:
+    upload-path: ./uploads/
