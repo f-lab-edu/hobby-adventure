@@ -40,3 +40,10 @@ out/
 # local config
 src/main/resources/application-local.yaml
 src/main/resources/application-local.yml
+
+# MySQL runtime data
+db/mysql/data/
+
+# uploads
+uploads/*
+!uploads/.gitkeep
