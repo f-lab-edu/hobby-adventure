@@ -51,6 +51,7 @@ services:
     command:
       - "--mysqld.username=hobby_user:hobby_pass"
       - "--mysqld.address=mysql:3306"
+      - "--no-collect.slave_status"
     ports:
       - "9104:9104"
     depends_on:
