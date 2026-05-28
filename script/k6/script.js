@@ -17,7 +17,7 @@ export default function () {
     };
 
     let response = http.get(
-        `http://host.docker.internal:8080/api/v1/my-explorations?page=${page}&size=${size}`,
+        `http://spring:8080/api/v1/my-explorations?page=${page}&size=${size}`,
         params
     );
 

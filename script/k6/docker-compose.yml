@@ -8,4 +8,9 @@ services:
     volumes:
       - ./script.js:/script.js
     command: run /script.js
-    network_mode: host
+    networks:
+      - hobby-adventure_default
+
+networks:
+  hobby-adventure_default:
+    external: true
