@@ -16,3 +16,9 @@ server:
 app:
   image:
     base-url: /images/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
