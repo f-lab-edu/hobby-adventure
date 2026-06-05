@@ -51,6 +51,10 @@ public interface RecordMapper {
             """)
     void update(Record record);
 
+    @Select("<script>SELECT user_exploration_id FROM records WHERE user_exploration_id IN " +
+            "<foreach collection='userExplorationIds' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    List<Long> findUserExplorationIdsByUserExplorationIdIn(@Param("userExplorationIds") List<Long> userExplorationIds);
+
     @Delete("DELETE FROM records WHERE id = #{id}")
     void deleteById(Long id);
 }

@@ -5,6 +5,7 @@ import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
+import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
@@ -13,13 +14,16 @@ import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
+import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +33,7 @@ public class MyExplorationService {
     private final UserExplorationMapper userExplorationMapper;
     private final ExplorationMapper explorationMapper;
     private final CategoryMapper categoryMapper;
+    private final RecordMapper recordMapper;
 
     @Value("${app.image.base-url}")
     private String imageBaseUrl;
@@ -51,11 +56,16 @@ public class MyExplorationService {
         Map<Long, String> categoryNameMap = categoryMapper.findAll().stream()
                 .collect(Collectors.toMap(Category::getCategoryId, Category::getName));
 
+        List<Long> ueIds = userExplorations.stream().map(UserExploration::getId).toList();
+        Set<Long> hasRecordSet = ueIds.isEmpty() ? Set.of() :
+                new HashSet<>(recordMapper.findUserExplorationIdsByUserExplorationIdIn(ueIds));
+
         List<MyExplorationListItemResponse> data = userExplorations.stream()
                 .map(ue -> {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
-                    return MyExplorationListItemResponse.from(ue, e, categoryName, imageBaseUrl);
+                    Boolean hasRecord = ue.getStatus() == ExplorationStatus.COMPLETED ? hasRecordSet.contains(ue.getId()) : null;
+                    return MyExplorationListItemResponse.from(ue, e, categoryName, imageBaseUrl, hasRecord);
                 })
                 .toList();
 
@@ -75,7 +85,11 @@ public class MyExplorationService {
 
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
-        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl);
+        Record record = recordMapper.findByUserExplorationId(userExplorationId).orElse(null);
+        Boolean hasRecord = userExploration.getStatus() == ExplorationStatus.COMPLETED ? record != null : null;
+        Long recordId = record != null ? record.getId() : null;
+
+        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl, hasRecord, recordId);
     }
 
     public CompleteExplorationResponse completeExploration(Long userId, Long userExplorationId) {
