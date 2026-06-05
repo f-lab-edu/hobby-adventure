@@ -17,7 +17,7 @@ public class Record extends BaseEntity {
     private String title;
     private LocalDate visitedDate;
     private int rating;
-    private Emotion emotion;
+    private Emotion emotionCode;
     private String placeName;
     private String content;
     private LocalDateTime updatedAt;
