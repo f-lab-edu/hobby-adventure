@@ -45,4 +45,8 @@ public interface UserExplorationMapper {
     @Select("<script>SELECT id FROM user_explorations WHERE user_id = #{userId} AND exploration_id IN " +
             "<foreach collection='explorationIds' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
     List<Long> findIdsByUserIdAndExplorationIds(@Param("userId") Long userId, @Param("explorationIds") List<Long> explorationIds);
+
+    @Select("<script>SELECT * FROM user_explorations WHERE id IN " +
+            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
+    List<UserExploration> findByIdIn(@Param("ids") List<Long> ids);
 }
