@@ -112,7 +112,7 @@ public class RecordService {
         List<Long> recordIds = records.stream().map(Record::getId).toList();
         Map<Long, String> thumbnailMap = buildThumbnailMap(recordIds);
 
-        List<Long> ueIds = records.stream().map(Record::getUserExplorationId).distinct().toList();
+        List<Long> ueIds = records.stream().map(Record::getUserExplorationId).toList();
         Map<Long, UserExploration> ueMap = userExplorationMapper.findByIdIn(ueIds).stream()
                 .collect(Collectors.toMap(UserExploration::getId, ue -> ue));
 
