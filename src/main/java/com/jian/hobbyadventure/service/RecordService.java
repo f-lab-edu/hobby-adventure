@@ -86,17 +86,7 @@ public class RecordService {
     public PageResponse<RecordListItemResponse> getRecords(Long userId, Long categoryId, Long explorationId, int page, int size) {
         int offset = (page - 1) * size;
 
-        List<Long> userExplorationIds;
-        if (explorationId != null) {
-            userExplorationIds = userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, List.of(explorationId));
-        } else if (categoryId != null) {
-            List<Long> explorationIds = explorationMapper.findIdsByCategoryId(categoryId);
-            userExplorationIds = explorationIds.isEmpty()
-                    ? List.of()
-                    : userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, explorationIds);
-        } else {
-            userExplorationIds = userExplorationMapper.findIdsByUserId(userId);
-        }
+        List<Long> userExplorationIds = filterUserExplorationIds(userId, categoryId, explorationId);
 
         if (userExplorationIds.isEmpty()) {
             return PageResponse.of(List.of(), PageMeta.of(page, size, 0));
@@ -212,6 +202,19 @@ public class RecordService {
         recordMapper.deleteById(recordId);
 
         return new DeleteRecordResponse(recordId);
+    }
+
+    private List<Long> filterUserExplorationIds(Long userId, Long categoryId, Long explorationId) {
+        if (explorationId != null) {
+            return userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, List.of(explorationId));
+        } else if (categoryId != null) {
+            List<Long> explorationIds = explorationMapper.findIdsByCategoryId(categoryId);
+            return explorationIds.isEmpty()
+                    ? List.of()
+                    : userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, explorationIds);
+        } else {
+            return userExplorationMapper.findIdsByUserId(userId);
+        }
     }
 
     private void saveRecordImages(Long recordId, List<MultipartFile> files) {
