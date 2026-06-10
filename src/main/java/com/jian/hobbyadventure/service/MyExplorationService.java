@@ -64,7 +64,7 @@ public class MyExplorationService {
                 .map(ue -> {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
-                    Boolean hasRecord = ue.getStatus() == ExplorationStatus.COMPLETED ? hasRecordSet.contains(ue.getId()) : null;
+                    Boolean hasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
                     return MyExplorationListItemResponse.from(ue, e, categoryName, imageBaseUrl, hasRecord);
                 })
                 .toList();
@@ -86,10 +86,14 @@ public class MyExplorationService {
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
         Record record = recordMapper.findByUserExplorationId(userExplorationId).orElse(null);
-        Boolean hasRecord = userExploration.getStatus() == ExplorationStatus.COMPLETED ? record != null : null;
+        Boolean hasRecord = toHasRecord(userExploration.getStatus(), record != null);
         Long recordId = record != null ? record.getId() : null;
 
         return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl, hasRecord, recordId);
+    }
+
+    private Boolean toHasRecord(ExplorationStatus status, boolean recordExists) {
+        return status == ExplorationStatus.COMPLETED ? recordExists : null;
     }
 
     public CompleteExplorationResponse completeExploration(Long userId, Long userExplorationId) {
