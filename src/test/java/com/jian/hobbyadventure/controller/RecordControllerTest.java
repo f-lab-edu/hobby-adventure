@@ -58,7 +58,7 @@ class RecordControllerTest {
                 new RecordListItemResponse(1L, 1L, 10L, "수채화 그리기 입문", 5L, "학습", "test title",
                         null, LocalDate.of(2025, 6, 1), 4, "HAPPY", "행복", LocalDateTime.now())
         );
-        when(recordService.getRecords(anyLong(), any(), any(), anyInt(), anyInt()))
+        when(recordService.getRecords(anyLong(), any(), anyInt(), anyInt()))
                 .thenReturn(PageResponse.of(data, PageMeta.of(1, 10, 1)));
 
         mockMvc.perform(get("/api/v1/records").header("X-User-Id", 1L))

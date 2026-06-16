@@ -11,6 +11,7 @@ import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.RecordImage;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.request.CreateRecordRequest;
+import com.jian.hobbyadventure.dto.request.RecordSearchCondition;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
@@ -83,10 +84,10 @@ public class RecordService {
         return new CreateRecordResponse(record.getId());
     }
 
-    public PageResponse<RecordListItemResponse> getRecords(Long userId, Long categoryId, Long explorationId, int page, int size) {
+    public PageResponse<RecordListItemResponse> getRecords(Long userId, RecordSearchCondition condition, int page, int size) {
         int offset = (page - 1) * size;
 
-        List<Long> userExplorationIds = filterUserExplorationIds(userId, categoryId, explorationId);
+        List<Long> userExplorationIds = filterUserExplorationIds(userId, condition);
 
         if (userExplorationIds.isEmpty()) {
             return PageResponse.of(List.of(), PageMeta.of(page, size, 0));
@@ -204,11 +205,11 @@ public class RecordService {
         return new DeleteRecordResponse(recordId);
     }
 
-    private List<Long> filterUserExplorationIds(Long userId, Long categoryId, Long explorationId) {
-        if (explorationId != null) {
-            return userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, List.of(explorationId));
-        } else if (categoryId != null) {
-            List<Long> explorationIds = explorationMapper.findIdsByCategoryId(categoryId);
+    private List<Long> filterUserExplorationIds(Long userId, RecordSearchCondition condition) {
+        if (condition.hasExplorationFilter()) {
+            return userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, List.of(condition.explorationId()));
+        } else if (condition.hasCategoryFilter()) {
+            List<Long> explorationIds = explorationMapper.findIdsByCategoryId(condition.categoryId());
             return explorationIds.isEmpty()
                     ? List.of()
                     : userExplorationMapper.findIdsByUserIdAndExplorationIds(userId, explorationIds);

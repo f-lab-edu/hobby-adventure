@@ -3,6 +3,7 @@ package com.jian.hobbyadventure.controller;
 import com.jian.hobbyadventure.common.response.CommonResponse;
 import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.dto.request.CreateRecordRequest;
+import com.jian.hobbyadventure.dto.request.RecordSearchCondition;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
@@ -48,7 +49,8 @@ public class RecordController {
             @RequestParam(required = false) Long explorationId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(recordService.getRecords(userId, categoryId, explorationId, page, size));
+        RecordSearchCondition condition = new RecordSearchCondition(categoryId, explorationId);
+        return ResponseEntity.ok(recordService.getRecords(userId, condition, page, size));
     }
 
     @Operation(summary = "기록 단건 조회")
