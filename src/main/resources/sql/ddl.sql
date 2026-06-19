@@ -49,3 +49,30 @@ CREATE TABLE user_explorations
     CONSTRAINT fk_user_explorations_exploration FOREIGN KEY (exploration_id) REFERENCES explorations (id)
 );
 
+CREATE TABLE records
+(
+    id                  BIGINT       NOT NULL AUTO_INCREMENT,
+    user_exploration_id BIGINT       NOT NULL,
+    title               VARCHAR(255) NOT NULL,
+    visited_date        DATE         NOT NULL,
+    rating              TINYINT      NOT NULL,
+    emotion_code        VARCHAR(30)  NOT NULL,
+    place_name          VARCHAR(255),
+    content             TEXT         NOT NULL,
+    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_records_user_exploration FOREIGN KEY (user_exploration_id) REFERENCES user_explorations (id)
+);
+
+CREATE TABLE record_images
+(
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    record_id   BIGINT       NOT NULL,
+    image_url   VARCHAR(500) NOT NULL,
+    image_order INT          NOT NULL,
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_record_images_record FOREIGN KEY (record_id) REFERENCES records (id)
+);
+
