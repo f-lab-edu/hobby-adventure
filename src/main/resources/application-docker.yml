@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: hobby-adventure
   datasource:
     url: jdbc:mysql://mysql:3306/hobby_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul
     driverClassName: com.mysql.cj.jdbc.Driver
