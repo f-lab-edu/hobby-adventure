@@ -37,6 +37,9 @@ out/
 .vscode/
 
 
+# env
+.env
+
 # local config
 src/main/resources/application-local.yaml
 src/main/resources/application-local.yml

@@ -17,13 +17,11 @@ import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordImageMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,11 +45,6 @@ class RecordServiceTest {
 
     @InjectMocks
     private RecordService recordService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(recordService, "imageBaseUrl", "/images/");
-    }
 
     private UserExploration createUserExploration(Long id, Long userId, Long explorationId, ExplorationStatus status) {
         UserExploration ue = new UserExploration();

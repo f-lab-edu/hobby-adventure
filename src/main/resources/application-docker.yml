@@ -13,9 +13,16 @@ springdoc:
   api-docs:
     enabled: false
 
-app:
-  image:
-    upload-path: ./uploads/
+aws:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT}
+    presign-endpoint: ${AWS_S3_PRESIGN_ENDPOINT}
+    bucket: ${AWS_S3_BUCKET}
+    region: ap-northeast-2
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+    force-path-style: true
+    create-bucket-on-startup: true
 
 management:
   metrics:

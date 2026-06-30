@@ -12,6 +12,7 @@ import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
+import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ class MyExplorationServiceTest {
     private ExplorationMapper explorationMapper;
     @Mock
     private CategoryMapper categoryMapper;
+    @Mock
+    private RecordMapper recordMapper;
 
     @InjectMocks
     private MyExplorationService myExplorationService;
@@ -89,6 +92,7 @@ class MyExplorationServiceTest {
         when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
         when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
         PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, null, 1, 10);
 
@@ -105,6 +109,7 @@ class MyExplorationServiceTest {
         when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
         when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
         PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, 1L, 1, 10);
 
@@ -119,6 +124,7 @@ class MyExplorationServiceTest {
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(ue));
         when(explorationMapper.findById(10L)).thenReturn(Optional.of(e));
         when(categoryMapper.findById(1L)).thenReturn(c);
+        when(recordMapper.findByUserExplorationId(1L)).thenReturn(Optional.empty());
 
         MyExplorationDetailResponse result = myExplorationService.getMyExploration(1L, 1L);
 
