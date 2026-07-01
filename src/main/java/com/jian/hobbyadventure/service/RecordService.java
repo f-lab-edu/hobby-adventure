@@ -24,7 +24,6 @@ import com.jian.hobbyadventure.repository.RecordImageMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,9 +43,6 @@ public class RecordService {
     private final ExplorationMapper explorationMapper;
     private final CategoryMapper categoryMapper;
     private final ImageService imageService;
-
-    @Value("${app.image.base-url}")
-    private String imageBaseUrl;
 
     @Transactional
     public CreateRecordResponse createRecord(Long userId, CreateRecordRequest request, List<MultipartFile> images) {
@@ -119,8 +115,7 @@ public class RecordService {
                     UserExploration ue = ueMap.get(record.getUserExplorationId());
                     Exploration exploration = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(exploration.getCategoryId());
-                    String thumbUrl = thumbnailMap.getOrDefault(record.getId(),
-                            exploration.getThumbnailUrl() != null ? imageBaseUrl + exploration.getThumbnailUrl() : null);
+                    String thumbUrl = thumbnailMap.getOrDefault(record.getId(), null);
                     return RecordListItemResponse.from(record, ue, exploration, categoryName, thumbUrl);
                 })
                 .toList();
@@ -145,7 +140,7 @@ public class RecordService {
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
         List<String> imageUrls = recordImageMapper.findAllByRecordId(recordId).stream()
-                .map(img -> imageBaseUrl + img.getImageUrl())
+                .map(img -> imageService.generatePresignedUrl(img.getImageUrl()))
                 .toList();
 
         return RecordDetailResponse.from(record, userExploration, exploration, category.getName(), imageUrls);
@@ -235,7 +230,7 @@ public class RecordService {
         return recordImageMapper.findAllByRecordIds(recordIds).stream()
                 .collect(Collectors.toMap(
                         RecordImage::getRecordId,
-                        img -> imageBaseUrl + img.getImageUrl(),
+                        img -> imageService.generatePresignedUrl(img.getImageUrl()),
                         (existing, replacement) -> existing
                 ));
     }
