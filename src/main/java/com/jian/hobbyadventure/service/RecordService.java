@@ -115,7 +115,8 @@ public class RecordService {
                     UserExploration ue = ueMap.get(record.getUserExplorationId());
                     Exploration exploration = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(exploration.getCategoryId());
-                    String thumbUrl = thumbnailMap.getOrDefault(record.getId(), null);
+                    String thumbUrl = thumbnailMap.getOrDefault(record.getId(),
+                            exploration.getThumbnailUrl() != null ? imageService.generatePresignedUrl(exploration.getThumbnailUrl()) : null);
                     return RecordListItemResponse.from(record, ue, exploration, categoryName, thumbUrl);
                 })
                 .toList();
