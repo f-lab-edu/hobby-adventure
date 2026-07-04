@@ -15,7 +15,6 @@ import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import com.jian.hobbyadventure.repository.UserMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,9 +29,7 @@ public class ExplorationService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
     private final UserExplorationMapper userExplorationMapper;
-
-    @Value("${app.image.base-url}")
-    private String imageBaseUrl;
+    private final ImageService imageService;
 
     public PageResponse<ExplorationListItemResponse> getExplorations(Long categoryId, int page, int size) {
         int offset = (page - 1) * size;
@@ -56,7 +53,7 @@ public class ExplorationService {
         }
 
         List<ExplorationListItemResponse> data = explorations.stream()
-                .map(e -> ExplorationListItemResponse.from(e, categoryNameMap.get(e.getCategoryId()), imageBaseUrl))
+                .map(e -> ExplorationListItemResponse.from(e, categoryNameMap.get(e.getCategoryId()), resolveThumbnailUrl(e)))
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
@@ -66,7 +63,7 @@ public class ExplorationService {
         Exploration exploration = explorationMapper.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         Category category = categoryMapper.findById(exploration.getCategoryId());
-        return ExplorationDetailResponse.from(exploration, category.getName(), imageBaseUrl);
+        return ExplorationDetailResponse.from(exploration, category.getName(), resolveThumbnailUrl(exploration));
     }
 
     public StartExplorationResponse startExploration(Long explorationId, Long userId) {
@@ -80,5 +77,11 @@ public class ExplorationService {
         UserExploration userExploration = UserExploration.create(userId, explorationId);
         userExplorationMapper.insert(userExploration);
         return new StartExplorationResponse(userExploration.getId());
+    }
+
+    private String resolveThumbnailUrl(Exploration exploration) {
+        return exploration.getThumbnailUrl() != null
+                ? imageService.generatePresignedUrl(exploration.getThumbnailUrl())
+                : null;
     }
 }
