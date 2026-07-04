@@ -171,11 +171,15 @@ public class RecordService {
         recordMapper.update(record);
 
         if (newImages != null) {
-            imageService.deleteImages(recordId);
+            List<String> oldImageKeys = recordImageMapper.findAllByRecordId(recordId).stream()
+                    .map(RecordImage::getImageUrl)
+                    .toList();
+
             recordImageMapper.deleteAllByRecordId(recordId);
             if (!newImages.isEmpty()) {
                 saveRecordImages(recordId, newImages);
             }
+            imageService.deleteImages(oldImageKeys);
         }
 
         return new UpdateRecordResponse(recordId);
@@ -193,9 +197,13 @@ public class RecordService {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
+        List<String> imageKeys = recordImageMapper.findAllByRecordId(recordId).stream()
+                .map(RecordImage::getImageUrl)
+                .toList();
+
         recordImageMapper.deleteAllByRecordId(recordId);
         recordMapper.deleteById(recordId);
-        imageService.deleteImages(recordId);
+        imageService.deleteImages(imageKeys);
 
         return new DeleteRecordResponse(recordId);
     }

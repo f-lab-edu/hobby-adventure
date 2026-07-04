@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.domain.Emotion;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.Record;
+import com.jian.hobbyadventure.domain.RecordImage;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.request.CreateRecordRequest;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
@@ -23,6 +24,7 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +33,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -204,16 +209,37 @@ class RecordServiceTest {
     }
 
     @Test
+    void updateRecord_이미지_교체_시_DB삭제와_새이미지_저장_이후에_옛이미지가_S3에서_삭제된다() {
+        when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
+        when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        RecordImage oldImage = new RecordImage();
+        oldImage.setImageUrl("records/1/old.jpg");
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of(oldImage));
+        MultipartFile newFile = mock(MultipartFile.class);
+        when(imageService.saveImages(eq(1L), anyList())).thenReturn(List.of("records/1/new.jpg"));
+
+        recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), List.of(newFile));
+
+        InOrder inOrder = inOrder(recordImageMapper, imageService);
+        inOrder.verify(recordImageMapper).deleteAllByRecordId(1L);
+        inOrder.verify(imageService).saveImages(eq(1L), anyList());
+        inOrder.verify(imageService).deleteImages(List.of("records/1/old.jpg"));
+    }
+
+    @Test
     void deleteRecord_성공_시_DB가_S3보다_먼저_삭제된다() {
         when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        RecordImage image = new RecordImage();
+        image.setImageUrl("records/1/a.jpg");
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of(image));
 
         recordService.deleteRecord(1L, 1L);
 
         InOrder inOrder = inOrder(recordImageMapper, recordMapper, imageService);
         inOrder.verify(recordImageMapper).deleteAllByRecordId(1L);
         inOrder.verify(recordMapper).deleteById(1L);
-        inOrder.verify(imageService).deleteImages(1L);
+        inOrder.verify(imageService).deleteImages(List.of("records/1/a.jpg"));
     }
 
     @Test

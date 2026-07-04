@@ -48,15 +48,11 @@ public class ImageService {
         return keys;
     }
 
-    public void deleteImages(Long recordId) {
-        String prefix = "records/" + recordId + "/";
-        ListObjectsV2Response list = s3Client.listObjectsV2(
-                ListObjectsV2Request.builder().bucket(bucket).prefix(prefix).build());
+    public void deleteImages(List<String> keys) {
+        if (keys.isEmpty()) return;
 
-        if (list.contents().isEmpty()) return;
-
-        List<ObjectIdentifier> objects = list.contents().stream()
-                .map(obj -> ObjectIdentifier.builder().key(obj.key()).build())
+        List<ObjectIdentifier> objects = keys.stream()
+                .map(key -> ObjectIdentifier.builder().key(key).build())
                 .toList();
 
         s3Client.deleteObjects(DeleteObjectsRequest.builder()
