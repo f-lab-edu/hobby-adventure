@@ -193,9 +193,9 @@ public class RecordService {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
-        imageService.deleteImages(recordId);
         recordImageMapper.deleteAllByRecordId(recordId);
         recordMapper.deleteById(recordId);
+        imageService.deleteImages(recordId);
 
         return new DeleteRecordResponse(recordId);
     }

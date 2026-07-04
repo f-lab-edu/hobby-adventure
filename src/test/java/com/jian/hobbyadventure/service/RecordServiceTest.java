@@ -19,6 +19,7 @@ import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -202,15 +204,16 @@ class RecordServiceTest {
     }
 
     @Test
-    void deleteRecord_성공_시_파일과_DB가_순서대로_삭제된다() {
+    void deleteRecord_성공_시_DB가_S3보다_먼저_삭제된다() {
         when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
 
         recordService.deleteRecord(1L, 1L);
 
-        verify(imageService).deleteImages(1L);
-        verify(recordImageMapper).deleteAllByRecordId(1L);
-        verify(recordMapper).deleteById(1L);
+        InOrder inOrder = inOrder(recordImageMapper, recordMapper, imageService);
+        inOrder.verify(recordImageMapper).deleteAllByRecordId(1L);
+        inOrder.verify(recordMapper).deleteById(1L);
+        inOrder.verify(imageService).deleteImages(1L);
     }
 
     @Test
