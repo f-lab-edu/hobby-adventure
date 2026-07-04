@@ -17,7 +17,6 @@ import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -34,9 +33,7 @@ public class MyExplorationService {
     private final ExplorationMapper explorationMapper;
     private final CategoryMapper categoryMapper;
     private final RecordMapper recordMapper;
-
-    @Value("${app.image.base-url}")
-    private String imageBaseUrl;
+    private final ImageService imageService;
 
     public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, int page, int size) {
         int offset = (page - 1) * size;
@@ -65,7 +62,7 @@ public class MyExplorationService {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
                     Boolean hasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
-                    return MyExplorationListItemResponse.from(ue, e, categoryName, imageBaseUrl, hasRecord);
+                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e), hasRecord);
                 })
                 .toList();
 
@@ -89,11 +86,17 @@ public class MyExplorationService {
         Boolean hasRecord = toHasRecord(userExploration.getStatus(), record != null);
         Long recordId = record != null ? record.getId() : null;
 
-        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), imageBaseUrl, hasRecord, recordId);
+        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), resolveThumbnailUrl(exploration), hasRecord, recordId);
     }
 
     private Boolean toHasRecord(ExplorationStatus status, boolean recordExists) {
         return status == ExplorationStatus.COMPLETED ? recordExists : null;
+    }
+
+    private String resolveThumbnailUrl(Exploration exploration) {
+        return exploration.getThumbnailUrl() != null
+                ? imageService.generatePresignedUrl(exploration.getThumbnailUrl())
+                : null;
     }
 
     public CompleteExplorationResponse completeExploration(Long userId, Long userExplorationId) {

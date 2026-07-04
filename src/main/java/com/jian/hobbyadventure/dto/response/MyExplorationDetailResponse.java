@@ -25,8 +25,7 @@ public class MyExplorationDetailResponse {
     private final Boolean hasRecord;
     private final Long recordId;
 
-    public static MyExplorationDetailResponse from(UserExploration ue, Exploration e, String categoryName, String imageBaseUrl, Boolean hasRecord, Long recordId) {
-        String thumbnailUrl = e.getThumbnailUrl() != null ? imageBaseUrl + e.getThumbnailUrl() : null;
+    public static MyExplorationDetailResponse from(UserExploration ue, Exploration e, String categoryName, String thumbnailUrl, Boolean hasRecord, Long recordId) {
         return new MyExplorationDetailResponse(
                 ue.getId(),
                 e.getId(),

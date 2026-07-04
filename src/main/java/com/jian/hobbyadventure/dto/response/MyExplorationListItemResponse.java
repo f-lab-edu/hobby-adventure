@@ -24,8 +24,7 @@ public class MyExplorationListItemResponse {
     private final LocalDateTime completedAt;
     private final Boolean hasRecord;
 
-    public static MyExplorationListItemResponse from(UserExploration ue, Exploration e, String categoryName, String imageBaseUrl, Boolean hasRecord) {
-        String thumbnailUrl = e.getThumbnailUrl() != null ? imageBaseUrl + e.getThumbnailUrl() : null;
+    public static MyExplorationListItemResponse from(UserExploration ue, Exploration e, String categoryName, String thumbnailUrl, Boolean hasRecord) {
         return new MyExplorationListItemResponse(
                 ue.getId(),
                 e.getId(),
