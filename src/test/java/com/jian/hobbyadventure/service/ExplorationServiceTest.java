@@ -11,13 +11,11 @@ import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import com.jian.hobbyadventure.repository.UserMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,14 +40,11 @@ class ExplorationServiceTest {
     private UserMapper userMapper;
     @Mock
     private UserExplorationMapper userExplorationMapper;
+    @Mock
+    private ImageService imageService;
 
     @InjectMocks
     private ExplorationService explorationService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(explorationService, "imageBaseUrl", "/images/");
-    }
 
     private Exploration createExploration(Long id, Long categoryId) {
         Exploration exploration = new Exploration();
@@ -116,12 +111,13 @@ class ExplorationServiceTest {
         Category category = createCategory(1L, "EXERCISE", "운동", 1);
         when(explorationMapper.findById(1L)).thenReturn(Optional.of(exploration));
         when(categoryMapper.findById(1L)).thenReturn(category);
+        when(imageService.generatePresignedUrl("explorations/test.jpg")).thenReturn("https://presigned-url.example/explorations/test.jpg");
 
         ExplorationDetailResponse result = explorationService.getExploration(1L);
 
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getCategoryName()).isEqualTo("운동");
-        assertThat(result.getThumbnailUrl()).isEqualTo("/images/explorations/test.jpg");
+        assertThat(result.getThumbnailUrl()).isEqualTo("https://presigned-url.example/explorations/test.jpg");
     }
 
     @Test

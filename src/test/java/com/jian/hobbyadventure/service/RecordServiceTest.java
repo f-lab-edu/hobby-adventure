@@ -10,8 +10,11 @@ import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.RecordImage;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.request.CreateRecordRequest;
+import com.jian.hobbyadventure.dto.request.RecordSearchCondition;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
+import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
+import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
@@ -173,6 +176,53 @@ class RecordServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.FORBIDDEN);
+    }
+
+    @Test
+    void getRecords_record_자체_이미지가_있으면_그_이미지를_사용한다() {
+        UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
+        Exploration exploration = createExploration(10L, 5L);
+        exploration.setThumbnailUrl("explorations/fallback.jpg");
+        Record record = createRecord(1L, 1L);
+        RecordImage image = new RecordImage();
+        image.setRecordId(1L);
+        image.setImageUrl("records/1/own.jpg");
+
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L));
+        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(record));
+        when(recordMapper.countByUserExplorationIds(List.of(1L))).thenReturn(1L);
+        when(recordImageMapper.findAllByRecordIds(List.of(1L))).thenReturn(List.of(image));
+        when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
+        when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
+        when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
+        when(imageService.generatePresignedUrl("records/1/own.jpg")).thenReturn("https://presigned/own.jpg");
+
+        PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
+
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://presigned/own.jpg");
+    }
+
+    @Test
+    void getRecords_record_이미지가_없으면_exploration_썸네일로_대체된다() {
+        UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
+        Exploration exploration = createExploration(10L, 5L);
+        exploration.setThumbnailUrl("explorations/fallback.jpg");
+        Record record = createRecord(1L, 1L);
+
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L));
+        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(record));
+        when(recordMapper.countByUserExplorationIds(List.of(1L))).thenReturn(1L);
+        when(recordImageMapper.findAllByRecordIds(List.of(1L))).thenReturn(List.of());
+        when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
+        when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
+        when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
+        when(imageService.generatePresignedUrl("explorations/fallback.jpg")).thenReturn("https://presigned/fallback.jpg");
+
+        PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
+
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://presigned/fallback.jpg");
     }
 
     @Test

@@ -14,10 +14,7 @@ public class ExplorationListItemResponse {
     private final String thumbnailUrl;
     private final String shortDescription;
 
-    public static ExplorationListItemResponse from(Exploration exploration, String categoryName, String imageBaseUrl) {
-        String thumbnailUrl = exploration.getThumbnailUrl() != null
-                ? imageBaseUrl + exploration.getThumbnailUrl()
-                : null;
+    public static ExplorationListItemResponse from(Exploration exploration, String categoryName, String thumbnailUrl) {
         return new ExplorationListItemResponse(
                 exploration.getId(),
                 categoryName,

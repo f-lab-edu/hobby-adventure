@@ -18,10 +18,7 @@ public class ExplorationDetailResponse {
     private final String description;
     private final LocalDateTime createdAt;
 
-    public static ExplorationDetailResponse from(Exploration exploration, String categoryName, String imageBaseUrl) {
-        String thumbnailUrl = exploration.getThumbnailUrl() != null
-                ? imageBaseUrl + exploration.getThumbnailUrl()
-                : null;
+    public static ExplorationDetailResponse from(Exploration exploration, String categoryName, String thumbnailUrl) {
         return new ExplorationDetailResponse(
                 exploration.getId(),
                 categoryName,

@@ -14,13 +14,11 @@ import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,14 +43,11 @@ class MyExplorationServiceTest {
     private CategoryMapper categoryMapper;
     @Mock
     private RecordMapper recordMapper;
+    @Mock
+    private ImageService imageService;
 
     @InjectMocks
     private MyExplorationService myExplorationService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(myExplorationService, "imageBaseUrl", "/images/");
-    }
 
     private UserExploration createUserExploration(Long id, Long userId, Long explorationId, ExplorationStatus status) {
         UserExploration ue = new UserExploration();
