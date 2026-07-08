@@ -7,9 +7,10 @@ services:
       - "6565:6565"
     volumes:
       - .:/scripts
-    command: run /scripts/explorations-thumbnail.js -o experimental-prometheus-rw
+    command: run /scripts/explorations-thumbnail.js -o experimental-prometheus-rw --system-tags method,status
     environment:
       - K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_STATS=med,p(95)
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
