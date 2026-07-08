@@ -6,8 +6,12 @@ services:
     ports:
       - "6565:6565"
     volumes:
-      - ./script.js:/script.js
-    command: run /script.js
+      - .:/scripts
+    command: run /scripts/explorations-thumbnail.js -o experimental-prometheus-rw
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - hobby-adventure_default
 
