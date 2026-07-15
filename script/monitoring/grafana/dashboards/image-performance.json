@@ -14,10 +14,10 @@
       "id": 1,
       "title": "Image Fetch Duration (median / p95)",
       "type": "timeseries",
-      "datasource": "prometheus",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "fieldConfig": {
-        "defaults": { "unit": "ms" },
+        "defaults": { "unit": "ms", "custom": { "axisLabel": "이미지 응답 시간 (ms)" } },
         "overrides": []
       },
       "targets": [
@@ -35,62 +35,140 @@
     },
     {
       "id": 2,
-      "title": "k6 Error Rate",
+      "title": "K6 HTTP 실패율 (1분 단위, %)",
       "type": "timeseries",
-      "datasource": "prometheus",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "fieldConfig": {
-        "defaults": { "unit": "percentunit", "max": 1, "min": 0 },
+        "defaults": {
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0,
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "axisLabel": "실패율 (%)" },
+          "color": { "mode": "fixed", "fixedColor": "red" }
+        },
         "overrides": []
       },
       "targets": [
         {
-          "expr": "k6_http_req_failed_rate",
-          "legendFormat": "status {{status}}",
+          "expr": "sum(increase(k6_http_reqs_total{status!=\"200\"}[1m])) / clamp_min(sum(increase(k6_http_reqs_total[1m])), 1)",
+          "legendFormat": "실패율",
+          "interval": "1m",
           "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "K6 Requests by Status (1분 단위 건수)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "stacking": { "mode": "normal" }, "fillOpacity": 80, "axisLabel": "요청 건수 (1분당)" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "성공" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "실패" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(k6_http_reqs_total{status=\"200\"}[1m]))",
+          "legendFormat": "성공",
+          "interval": "1m",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(increase(k6_http_reqs_total{status!=\"200\"}[1m]))",
+          "legendFormat": "실패",
+          "interval": "1m",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "K6 Completed / Dropped Iterations (1분 단위 건수)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "stacking": { "mode": "normal" }, "fillOpacity": 80, "axisLabel": "iteration 건수 (1분당)" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "완료(completed)" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "미시도(dropped)" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(k6_iterations_total[1m]))",
+          "legendFormat": "완료(completed)",
+          "interval": "1m",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(increase(k6_dropped_iterations_total[1m]))",
+          "legendFormat": "미시도(dropped)",
+          "interval": "1m",
+          "refId": "B"
         }
       ]
     },
     {
       "id": 3,
-      "title": "S3 Requests",
+      "title": "S3 GET Requests (1분 단위 건수)",
       "type": "timeseries",
-      "datasource": "cloudwatch",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "axisLabel": "S3 GET 요청 건수 (1분당)" } },
+        "overrides": []
+      },
       "targets": [
         {
           "namespace": "AWS/S3",
-          "metricName": "AllRequests",
+          "metricName": "GetRequests",
           "statistic": "Sum",
+          "period": "60",
           "dimensions": {
-            "BucketName": "hobby-adventure-bucket",
-            "FilterId": "EntireBucket"
+            "BucketName": "hobby-adventure-483955238702-ap-northeast-2-an",
+            "FilterId": "AllRequests"
           },
           "region": "ap-northeast-2",
-          "refId": "A"
+          "refId": "A",
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0
         }
       ]
     },
     {
       "id": 4,
-      "title": "CloudFront Requests / Cache Hit Rate",
+      "title": "CloudFront Requests (1분 단위) - DistributionId 미설정, 배포 생성 후 추가 필요",
       "type": "timeseries",
-      "datasource": "cloudwatch",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "axisLabel": "CloudFront 요청 건수 (1분당)" } },
+        "overrides": []
+      },
       "targets": [
         {
           "namespace": "AWS/CloudFront",
           "metricName": "Requests",
           "statistic": "Sum",
+          "period": "60",
           "region": "us-east-1",
-          "refId": "A"
-        },
-        {
-          "namespace": "AWS/CloudFront",
-          "metricName": "CacheHitRate",
-          "statistic": "Average",
-          "region": "us-east-1",
-          "refId": "B"
+          "refId": "A",
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0
         }
       ]
     }

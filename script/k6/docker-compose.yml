@@ -11,6 +11,7 @@ services:
     environment:
       - K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_STATS=med,p(95)
+      - "TESTID=${TESTID:?TESTID를 설정해주세요. 예: TESTID=$(date +%Y%m%d-%H%M%S) docker compose up}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
