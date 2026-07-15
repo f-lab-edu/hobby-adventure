@@ -23,6 +23,8 @@ services:
       - APP_NAME=app-1
     env_file:
       - .env
+    volumes:
+      - ./keys/cloudfront-private-key.pem:/app/keys/cloudfront-private-key.pem:ro
     deploy:
       resources:
         limits:
@@ -46,6 +48,8 @@ services:
       - APP_NAME=app-2
     env_file:
       - .env
+    volumes:
+      - ./keys/cloudfront-private-key.pem:/app/keys/cloudfront-private-key.pem:ro
     deploy:
       resources:
         limits:
@@ -69,6 +73,8 @@ services:
       - APP_NAME=app-3
     env_file:
       - .env
+    volumes:
+      - ./keys/cloudfront-private-key.pem:/app/keys/cloudfront-private-key.pem:ro
     deploy:
       resources:
         limits:

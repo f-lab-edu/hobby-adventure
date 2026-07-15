@@ -141,7 +141,7 @@ public class RecordService {
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
         List<String> imageUrls = recordImageMapper.findAllByRecordId(recordId).stream()
-                .map(img -> imageService.generatePresignedUrl(img.getImageUrl()))
+                .map(img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl()))
                 .toList();
 
         return RecordDetailResponse.from(record, userExploration, exploration, category.getName(), imageUrls);
@@ -239,7 +239,7 @@ public class RecordService {
         return recordImageMapper.findAllByRecordIds(recordIds).stream()
                 .collect(Collectors.toMap(
                         RecordImage::getRecordId,
-                        img -> imageService.generatePresignedUrl(img.getImageUrl()),
+                        img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl()),
                         (existing, replacement) -> existing
                 ));
     }

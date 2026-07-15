@@ -25,6 +25,8 @@ aws:
     create-bucket-on-startup: ${AWS_S3_CREATE_BUCKET_ON_STARTUP:false}
   cloudfront:
     domain: ${AWS_CLOUDFRONT_DOMAIN}
+    private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
+    key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
 
 management:
   metrics:
