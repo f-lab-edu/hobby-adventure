@@ -23,6 +23,8 @@ aws:
     secret-key: ${AWS_SECRET_KEY}
     force-path-style: ${AWS_S3_FORCE_PATH_STYLE:false}
     create-bucket-on-startup: ${AWS_S3_CREATE_BUCKET_ON_STARTUP:false}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
 
 management:
   metrics:

@@ -81,7 +81,7 @@ public class ExplorationService {
 
     private String resolveThumbnailUrl(Exploration exploration) {
         return exploration.getThumbnailUrl() != null
-                ? imageService.generatePresignedUrl(exploration.getThumbnailUrl())
+                ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl())
                 : null;
     }
 }

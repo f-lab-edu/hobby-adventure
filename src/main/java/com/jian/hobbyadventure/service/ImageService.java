@@ -26,6 +26,9 @@ public class ImageService {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
+    @Value("${aws.cloudfront.domain}")
+    private String cloudFrontDomain;
+
     public List<String> saveImages(Long recordId, List<MultipartFile> files) {
         List<String> keys = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -71,6 +74,10 @@ public class ImageService {
                 .build();
 
         return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    public String generatePublicCloudFrontUrl(String key) {
+        return "https://" + cloudFrontDomain + "/" + key;
     }
 
     private String extractExtension(String originalFilename) {
