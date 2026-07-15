@@ -53,3 +53,6 @@ db/mysql/data/
 # uploads
 uploads/*
 !uploads/.gitkeep
+
+# local-only docs
+docs/
