@@ -21,8 +21,12 @@ aws:
     region: ap-northeast-2
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
-    force-path-style: true
-    create-bucket-on-startup: true
+    force-path-style: ${AWS_S3_FORCE_PATH_STYLE:false}
+    create-bucket-on-startup: ${AWS_S3_CREATE_BUCKET_ON_STARTUP:false}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
+    private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
+    key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
 
 management:
   metrics:

@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
@@ -15,10 +16,10 @@ import java.net.URI;
 @Configuration
 public class S3Config {
 
-    @Value("${aws.s3.endpoint}")
+    @Value("${aws.s3.endpoint:}")
     private String endpoint;
 
-    @Value("${aws.s3.presign-endpoint}")
+    @Value("${aws.s3.presign-endpoint:}")
     private String presignEndpoint;
 
     @Value("${aws.s3.region}")
@@ -35,25 +36,33 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        return S3Client.builder()
-                .endpointOverride(URI.create(endpoint))
+        S3ClientBuilder builder = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
-                .forcePathStyle(forcePathStyle)
-                .build();
+                .forcePathStyle(forcePathStyle);
+
+        if (!endpoint.isBlank()) {
+            builder.endpointOverride(URI.create(endpoint));
+        }
+
+        return builder.build();
     }
 
     @Bean
     public S3Presigner s3Presigner() {
-        return S3Presigner.builder()
-                .endpointOverride(URI.create(presignEndpoint))
+        S3Presigner.Builder builder = S3Presigner.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(forcePathStyle)
-                        .build())
-                .build();
+                        .build());
+
+        if (!presignEndpoint.isBlank()) {
+            builder.endpointOverride(URI.create(presignEndpoint));
+        }
+
+        return builder.build();
     }
 }
