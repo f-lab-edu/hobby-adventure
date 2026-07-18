@@ -5,6 +5,7 @@ import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
+import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
@@ -111,13 +112,13 @@ class ExplorationServiceTest {
         Category category = createCategory(1L, "EXERCISE", "운동", 1);
         when(explorationMapper.findById(1L)).thenReturn(Optional.of(exploration));
         when(categoryMapper.findById(1L)).thenReturn(category);
-        when(imageService.generatePresignedUrl("explorations/test.jpg")).thenReturn("https://presigned-url.example/explorations/test.jpg");
+        when(imageService.generatePublicCloudFrontUrl("explorations/test.jpg", ImageSize.DETAIL)).thenReturn("https://cdn.example/explorations/detail/test.jpg");
 
         ExplorationDetailResponse result = explorationService.getExploration(1L);
 
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getCategoryName()).isEqualTo("운동");
-        assertThat(result.getThumbnailUrl()).isEqualTo("https://presigned-url.example/explorations/test.jpg");
+        assertThat(result.getThumbnailUrl()).isEqualTo("https://cdn.example/explorations/detail/test.jpg");
     }
 
     @Test

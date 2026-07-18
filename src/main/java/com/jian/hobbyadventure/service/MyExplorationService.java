@@ -5,6 +5,7 @@ import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
+import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.common.exception.BusinessException;
@@ -62,7 +63,7 @@ public class MyExplorationService {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
                     Boolean hasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
-                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e), hasRecord);
+                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e, ImageSize.LIST), hasRecord);
                 })
                 .toList();
 
@@ -86,16 +87,16 @@ public class MyExplorationService {
         Boolean hasRecord = toHasRecord(userExploration.getStatus(), record != null);
         Long recordId = record != null ? record.getId() : null;
 
-        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), resolveThumbnailUrl(exploration), hasRecord, recordId);
+        return MyExplorationDetailResponse.from(userExploration, exploration, category.getName(), resolveThumbnailUrl(exploration, ImageSize.DETAIL), hasRecord, recordId);
     }
 
     private Boolean toHasRecord(ExplorationStatus status, boolean recordExists) {
         return status == ExplorationStatus.COMPLETED ? recordExists : null;
     }
 
-    private String resolveThumbnailUrl(Exploration exploration) {
+    private String resolveThumbnailUrl(Exploration exploration, ImageSize size) {
         return exploration.getThumbnailUrl() != null
-                ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl())
+                ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl(), size)
                 : null;
     }
 

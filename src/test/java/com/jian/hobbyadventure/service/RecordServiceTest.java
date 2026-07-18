@@ -6,6 +6,7 @@ import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Emotion;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
+import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.RecordImage;
 import com.jian.hobbyadventure.domain.UserExploration;
@@ -208,7 +209,7 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generateSignedCloudFrontUrl("records/1/own.jpg")).thenReturn("https://signed/own.jpg");
+        when(imageService.generateSignedCloudFrontUrl("records/1/own.jpg", ImageSize.LIST)).thenReturn("https://signed/own.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
@@ -230,7 +231,7 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generatePublicCloudFrontUrl("explorations/fallback.jpg")).thenReturn("https://public/fallback.jpg");
+        when(imageService.generatePublicCloudFrontUrl("explorations/fallback.jpg", ImageSize.LIST)).thenReturn("https://public/fallback.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
