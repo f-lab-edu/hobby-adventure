@@ -208,12 +208,12 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generatePresignedUrl("records/1/own.jpg")).thenReturn("https://presigned/own.jpg");
+        when(imageService.generateSignedCloudFrontUrl("records/1/own.jpg")).thenReturn("https://signed/own.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
         assertThat(result.getData()).hasSize(1);
-        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://presigned/own.jpg");
+        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://signed/own.jpg");
     }
 
     @Test
@@ -230,12 +230,12 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generatePresignedUrl("explorations/fallback.jpg")).thenReturn("https://presigned/fallback.jpg");
+        when(imageService.generatePublicCloudFrontUrl("explorations/fallback.jpg")).thenReturn("https://public/fallback.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
         assertThat(result.getData()).hasSize(1);
-        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://presigned/fallback.jpg");
+        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://public/fallback.jpg");
     }
 
     @Test
