@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecordService {
 
+    private static final int MAX_IMAGE_COUNT = 10;
+
     private final RecordMapper recordMapper;
     private final RecordImageMapper recordImageMapper;
     private final UserExplorationMapper userExplorationMapper;
@@ -46,6 +48,10 @@ public class RecordService {
 
     @Transactional
     public CreateRecordResponse createRecord(Long userId, CreateRecordRequest request, List<MultipartFile> images) {
+        if (images != null && images.size() > MAX_IMAGE_COUNT) {
+            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+        }
+
         UserExploration userExploration = userExplorationMapper.findById(request.getUserExplorationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
@@ -149,6 +155,10 @@ public class RecordService {
 
     @Transactional
     public UpdateRecordResponse updateRecord(Long userId, Long recordId, UpdateRecordRequest request, List<MultipartFile> newImages) {
+        if (newImages != null && newImages.size() > MAX_IMAGE_COUNT) {
+            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+        }
+
         Record record = recordMapper.findById(recordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 

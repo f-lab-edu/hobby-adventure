@@ -143,6 +143,19 @@ class RecordServiceTest {
     }
 
     @Test
+    void createRecord_이미지가_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
+        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        List<MultipartFile> images = List.of(mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
+                mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
+                mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class));
+
+        assertThatThrownBy(() -> recordService.createRecord(1L, request, images))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+    }
+
+    @Test
     void getRecord_성공_시_기록_상세를_반환한다() {
         when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
@@ -256,6 +269,18 @@ class RecordServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.FORBIDDEN);
+    }
+
+    @Test
+    void updateRecord_이미지가_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
+        List<MultipartFile> images = List.of(mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
+                mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
+                mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class));
+
+        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), images))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.IMAGE_LIMIT_EXCEEDED);
     }
 
     @Test
