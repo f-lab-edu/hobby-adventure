@@ -1,7 +1,7 @@
 const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const sharp = require("sharp");
 
-const SIZE_WHITELIST = ["list", "detail"];
+const SIZE_WHITELIST = new Set(["list", "detail"]);
 const SIZE_CONFIG = {
   list: { width: 400, height: 400, fit: "cover" },
   detail: { width: 1200, fit: "inside" },
@@ -27,10 +27,9 @@ exports.handler = async (event) => {
 
   // ③ 요청경로에서 사이즈코드 추출 + 화이트리스트 검증
   const segments = uri.split("/");
-  const fileName = segments[segments.length - 1];
   const sizeCode = segments[segments.length - 2];
 
-  if (!SIZE_WHITELIST.includes(sizeCode)) {
+  if (!SIZE_WHITELIST.has(sizeCode)) {
     return response;
   }
 
