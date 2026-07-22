@@ -71,9 +71,9 @@ class RecordServiceTest {
     }
 
     private Record createRecord(Long id, Long userExplorationId) {
-        Record record = Record.create(userExplorationId, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
-        record.setId(id);
-        return record;
+        Record savedRecord = Record.create(userExplorationId, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        savedRecord.setId(id);
+        return savedRecord;
     }
 
     private Exploration createExploration(Long id, Long categoryId) {
@@ -201,13 +201,13 @@ class RecordServiceTest {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration exploration = createExploration(10L, 5L);
         exploration.setThumbnailUrl(FALLBACK_THUMBNAIL_URL);
-        Record record = createRecord(1L, 1L);
+        Record savedRecord = createRecord(1L, 1L);
         RecordImage image = new RecordImage();
         image.setRecordId(1L);
         image.setImageUrl("records/1/own.jpg");
 
         when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L));
-        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(record));
+        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(savedRecord));
         when(recordMapper.countByUserExplorationIds(List.of(1L))).thenReturn(1L);
         when(recordImageMapper.findAllByRecordIds(List.of(1L))).thenReturn(List.of(image));
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
@@ -226,10 +226,10 @@ class RecordServiceTest {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration exploration = createExploration(10L, 5L);
         exploration.setThumbnailUrl(FALLBACK_THUMBNAIL_URL);
-        Record record = createRecord(1L, 1L);
+        Record savedRecord = createRecord(1L, 1L);
 
         when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L));
-        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(record));
+        when(recordMapper.findAllByUserExplorationIds(List.of(1L), 10, 0)).thenReturn(List.of(savedRecord));
         when(recordMapper.countByUserExplorationIds(List.of(1L))).thenReturn(1L);
         when(recordImageMapper.findAllByRecordIds(List.of(1L))).thenReturn(List.of());
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
@@ -245,14 +245,14 @@ class RecordServiceTest {
 
     @Test
     void updateRecord_성공_시_recordMapper_update가_호출된다() {
-        Record record = createRecord(1L, 1L);
-        when(recordMapper.findById(1L)).thenReturn(Optional.of(record));
+        Record savedRecord = createRecord(1L, 1L);
+        when(recordMapper.findById(1L)).thenReturn(Optional.of(savedRecord));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
 
         UpdateRecordResponse result = recordService.updateRecord(1L, 1L, new UpdateRecordRequest("new title", null, null, null, null, null), null);
 
         assertThat(result.getRecordId()).isEqualTo(1L);
-        verify(recordMapper).update(record);
+        verify(recordMapper).update(savedRecord);
     }
 
     @Test
