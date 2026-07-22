@@ -47,6 +47,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RecordServiceTest {
 
+    private static final String TITLE = "title";
+    private static final String CONTENT = "content";
+    private static final String FALLBACK_THUMBNAIL_URL = "explorations/fallback.jpg";
+
     @Mock private RecordMapper recordMapper;
     @Mock private RecordImageMapper recordImageMapper;
     @Mock private UserExplorationMapper userExplorationMapper;
@@ -67,7 +71,7 @@ class RecordServiceTest {
     }
 
     private Record createRecord(Long id, Long userExplorationId) {
-        Record record = Record.create(userExplorationId, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        Record record = Record.create(userExplorationId, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         record.setId(id);
         return record;
     }
@@ -89,7 +93,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_성공_시_recordMapper_insert가_호출된다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
         when(recordMapper.existsByUserExplorationId(1L)).thenReturn(false);
 
@@ -100,7 +104,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_존재하지_않는_userExploration_시_NOT_FOUND를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -111,7 +115,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_다른_유저의_탐험_시_FORBIDDEN을_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 2L, 10L, ExplorationStatus.COMPLETED)));
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -122,7 +126,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_COMPLETED가_아닌_탐험_시_INVALID_STATE를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.STARTED)));
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -133,7 +137,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_이미_기록이_있으면_DUPLICATED를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
         when(recordMapper.existsByUserExplorationId(1L)).thenReturn(true);
 
@@ -145,7 +149,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_이미지가_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, "title", LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, "content");
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
         List<MultipartFile> images = List.of(mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class));
@@ -196,7 +200,7 @@ class RecordServiceTest {
     void getRecords_record_자체_이미지가_있으면_그_이미지를_사용한다() {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration exploration = createExploration(10L, 5L);
-        exploration.setThumbnailUrl("explorations/fallback.jpg");
+        exploration.setThumbnailUrl(FALLBACK_THUMBNAIL_URL);
         Record record = createRecord(1L, 1L);
         RecordImage image = new RecordImage();
         image.setRecordId(1L);
@@ -221,7 +225,7 @@ class RecordServiceTest {
     void getRecords_record_이미지가_없으면_exploration_썸네일로_대체된다() {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration exploration = createExploration(10L, 5L);
-        exploration.setThumbnailUrl("explorations/fallback.jpg");
+        exploration.setThumbnailUrl(FALLBACK_THUMBNAIL_URL);
         Record record = createRecord(1L, 1L);
 
         when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L));
@@ -231,7 +235,7 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generatePublicCloudFrontUrl("explorations/fallback.jpg", ImageSize.LIST)).thenReturn("https://public/fallback.jpg");
+        when(imageService.generatePublicCloudFrontUrl(FALLBACK_THUMBNAIL_URL, ImageSize.LIST)).thenReturn("https://public/fallback.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
