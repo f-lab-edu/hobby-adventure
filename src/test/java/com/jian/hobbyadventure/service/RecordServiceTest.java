@@ -31,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +72,7 @@ class RecordServiceTest {
     }
 
     private Record createRecord(Long id, Long userExplorationId) {
-        Record savedRecord = Record.create(userExplorationId, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        Record savedRecord = Record.create(userExplorationId, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         savedRecord.setId(id);
         return savedRecord;
     }
@@ -93,7 +94,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_성공_시_recordMapper_insert가_호출된다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
         when(recordMapper.existsByUserExplorationId(1L)).thenReturn(false);
 
@@ -104,7 +105,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_존재하지_않는_userExploration_시_NOT_FOUND를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -115,7 +116,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_다른_유저의_탐험_시_FORBIDDEN을_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 2L, 10L, ExplorationStatus.COMPLETED)));
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -126,7 +127,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_COMPLETED가_아닌_탐험_시_INVALID_STATE를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.STARTED)));
 
         assertThatThrownBy(() -> recordService.createRecord(1L, request, null))
@@ -137,7 +138,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_이미_기록이_있으면_DUPLICATED를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
         when(recordMapper.existsByUserExplorationId(1L)).thenReturn(true);
 
@@ -149,7 +150,7 @@ class RecordServiceTest {
 
     @Test
     void createRecord_이미지가_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
-        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, 6, 1), 4, Emotion.HAPPY, null, CONTENT);
+        CreateRecordRequest request = new CreateRecordRequest(1L, TITLE, LocalDate.of(2025, Month.JUNE, 1), 4, Emotion.HAPPY, null, CONTENT);
         List<MultipartFile> images = List.of(mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class));
