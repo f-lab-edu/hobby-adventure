@@ -1,5 +1,6 @@
 package com.jian.hobbyadventure.service;
 
+import com.jian.hobbyadventure.domain.ImageSize;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,8 +11,6 @@ import software.amazon.awssdk.services.cloudfront.model.CannedSignerRequest;
 import software.amazon.awssdk.services.cloudfront.url.SignedUrl;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -26,7 +25,6 @@ import java.util.UUID;
 public class ImageService {
 
     private final S3Client s3Client;
-    private final S3Presigner s3Presigner;
     private final CloudFrontUtilities cloudFrontUtilities;
 
     @Value("${aws.s3.bucket}")
@@ -76,37 +74,34 @@ public class ImageService {
                 .build());
     }
 
-    public String generatePresignedUrl(String key) {
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(30))
-                .getObjectRequest(GetObjectRequest.builder()
-                        .bucket(bucket)
-                        .key(key)
-                        .build())
-                .build();
-
-        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    public String generatePublicCloudFrontUrl(String key, ImageSize size) {
+        return "https://" + cloudFrontDomain + "/" + withSize(key, size);
     }
 
-    public String generatePublicCloudFrontUrl(String key) {
-        return "https://" + cloudFrontDomain + "/" + key;
-    }
-
-    public String generateSignedCloudFrontUrl(String key) {
+    public String generateSignedCloudFrontUrl(String key, ImageSize size) {
+        String sizedKey = withSize(key, size);
         CannedSignerRequest request;
         try {
             request = CannedSignerRequest.builder()
-                    .resourceUrl("https://" + cloudFrontDomain + "/" + key)
+                    .resourceUrl("https://" + cloudFrontDomain + "/" + sizedKey)
                     .privateKey(Paths.get(cloudFrontPrivateKeyPath))
                     .keyPairId(cloudFrontKeyPairId)
                     .expirationDate(Instant.now().plus(Duration.ofMinutes(30)))
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("CloudFront 서명 URL 생성 실패: " + key, e);
+            throw new RuntimeException("CloudFront 서명 URL 생성 실패: " + sizedKey, e);
         }
 
         SignedUrl signedUrl = cloudFrontUtilities.getSignedUrlWithCannedPolicy(request);
         return signedUrl.url();
+    }
+
+    private String withSize(String key, ImageSize size) {
+        int lastSlash = key.lastIndexOf('/');
+        if (lastSlash == -1) {
+            return size.getCode() + "/" + key;
+        }
+        return key.substring(0, lastSlash) + "/" + size.getCode() + "/" + key.substring(lastSlash + 1);
     }
 
     private String extractExtension(String originalFilename) {

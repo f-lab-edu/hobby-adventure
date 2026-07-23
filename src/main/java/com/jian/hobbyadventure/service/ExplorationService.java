@@ -4,6 +4,7 @@ import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
+import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.response.ExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationListItemResponse;
@@ -53,7 +54,7 @@ public class ExplorationService {
         }
 
         List<ExplorationListItemResponse> data = explorations.stream()
-                .map(e -> ExplorationListItemResponse.from(e, categoryNameMap.get(e.getCategoryId()), resolveThumbnailUrl(e)))
+                .map(e -> ExplorationListItemResponse.from(e, categoryNameMap.get(e.getCategoryId()), resolveThumbnailUrl(e, ImageSize.LIST)))
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
@@ -63,7 +64,7 @@ public class ExplorationService {
         Exploration exploration = explorationMapper.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         Category category = categoryMapper.findById(exploration.getCategoryId());
-        return ExplorationDetailResponse.from(exploration, category.getName(), resolveThumbnailUrl(exploration));
+        return ExplorationDetailResponse.from(exploration, category.getName(), resolveThumbnailUrl(exploration, ImageSize.DETAIL));
     }
 
     public StartExplorationResponse startExploration(Long explorationId, Long userId) {
@@ -79,9 +80,9 @@ public class ExplorationService {
         return new StartExplorationResponse(userExploration.getId());
     }
 
-    private String resolveThumbnailUrl(Exploration exploration) {
+    private String resolveThumbnailUrl(Exploration exploration, ImageSize size) {
         return exploration.getThumbnailUrl() != null
-                ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl())
+                ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl(), size)
                 : null;
     }
 }

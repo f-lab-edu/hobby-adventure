@@ -1,0 +1,10 @@
+{
+  "name": "image-resize",
+  "version": "1.0.0",
+  "description": "Lambda@Edge origin-response function that resizes images on demand",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1092.0",
+    "sharp": "^0.33.5"
+  }
+}

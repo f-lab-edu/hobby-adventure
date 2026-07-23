@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
+import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.RecordImage;
 import com.jian.hobbyadventure.domain.UserExploration;
@@ -37,6 +38,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecordService {
 
+    private static final int MAX_IMAGE_COUNT = 10;
+
     private final RecordMapper recordMapper;
     private final RecordImageMapper recordImageMapper;
     private final UserExplorationMapper userExplorationMapper;
@@ -46,6 +49,10 @@ public class RecordService {
 
     @Transactional
     public CreateRecordResponse createRecord(Long userId, CreateRecordRequest request, List<MultipartFile> images) {
+        if (images != null && images.size() > MAX_IMAGE_COUNT) {
+            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+        }
+
         UserExploration userExploration = userExplorationMapper.findById(request.getUserExplorationId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
@@ -116,7 +123,7 @@ public class RecordService {
                     Exploration exploration = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(exploration.getCategoryId());
                     String thumbUrl = thumbnailMap.getOrDefault(record.getId(),
-                            exploration.getThumbnailUrl() != null ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl()) : null);
+                            exploration.getThumbnailUrl() != null ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl(), ImageSize.LIST) : null);
                     return RecordListItemResponse.from(record, ue, exploration, categoryName, thumbUrl);
                 })
                 .toList();
@@ -141,7 +148,7 @@ public class RecordService {
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
         List<String> imageUrls = recordImageMapper.findAllByRecordId(recordId).stream()
-                .map(img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl()))
+                .map(img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl(), ImageSize.DETAIL))
                 .toList();
 
         return RecordDetailResponse.from(record, userExploration, exploration, category.getName(), imageUrls);
@@ -149,6 +156,10 @@ public class RecordService {
 
     @Transactional
     public UpdateRecordResponse updateRecord(Long userId, Long recordId, UpdateRecordRequest request, List<MultipartFile> newImages) {
+        if (newImages != null && newImages.size() > MAX_IMAGE_COUNT) {
+            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+        }
+
         Record record = recordMapper.findById(recordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
@@ -239,7 +250,7 @@ public class RecordService {
         return recordImageMapper.findAllByRecordIds(recordIds).stream()
                 .collect(Collectors.toMap(
                         RecordImage::getRecordId,
-                        img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl()),
+                        img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl(), ImageSize.LIST),
                         (existing, replacement) -> existing
                 ));
     }
