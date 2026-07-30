@@ -27,6 +27,12 @@ aws:
     domain: ${AWS_CLOUDFRONT_DOMAIN}
     private-key-path: ${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}
     key-pair-id: ${AWS_CLOUDFRONT_KEY_PAIR_ID}
+  sqs:
+    endpoint: ${AWS_SQS_ENDPOINT}
+    region: ap-northeast-2
+    access-key: ${AWS_SQS_ACCESS_KEY}
+    secret-key: ${AWS_SQS_SECRET_KEY}
+    view-event-queue-url: ${AWS_SQS_VIEW_EVENT_QUEUE_URL}
 
 management:
   metrics:
