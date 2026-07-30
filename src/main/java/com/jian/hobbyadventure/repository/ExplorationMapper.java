@@ -4,12 +4,16 @@ import com.jian.hobbyadventure.domain.Exploration;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Optional;
 
 @Mapper
 public interface ExplorationMapper {
+
+    @Update("UPDATE explorations SET view_count = view_count + #{delta} WHERE id = #{explorationId}")
+    void incrementViewCount(@Param("explorationId") Long explorationId, @Param("delta") Long delta);
 
     @Select("SELECT * FROM explorations ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}")
     List<Exploration> findAll(@Param("size") int size, @Param("offset") int offset);
