@@ -1,6 +1,5 @@
 package com.jian.hobbyadventure.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jian.hobbyadventure.domain.ExplorationView;
 import com.jian.hobbyadventure.dto.message.ViewEventMessage;
 import com.jian.hobbyadventure.repository.ExplorationViewMapper;
@@ -14,6 +13,7 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class ExplorationViewIngestionWorker {
 
     private final SqsClient sqsClient;
     private final ExplorationViewMapper explorationViewMapper;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Value("${aws.sqs.view-event-queue-url}")
     private String queueUrl;
@@ -51,7 +51,7 @@ public class ExplorationViewIngestionWorker {
 
         for (Message message : messages) {
             try {
-                ViewEventMessage event = objectMapper.readValue(message.body(), ViewEventMessage.class);
+                ViewEventMessage event = jsonMapper.readValue(message.body(), ViewEventMessage.class);
                 views.add(new ExplorationView(event.viewEventId(), event.explorationId(), event.viewedAt()));
                 parsedMessages.add(message);
             } catch (Exception e) {
