@@ -2,6 +2,7 @@ package com.jian.hobbyadventure.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jian.hobbyadventure.dto.message.ViewEventMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,8 +47,5 @@ public class ExplorationViewEventPublisher {
                     log.error("조회 이벤트 발행 실패, explorationId={}", explorationId, ex);
                     return null;
                 });
-    }
-
-    private record ViewEventMessage(String viewEventId, Long explorationId, LocalDateTime viewedAt) {
     }
 }
