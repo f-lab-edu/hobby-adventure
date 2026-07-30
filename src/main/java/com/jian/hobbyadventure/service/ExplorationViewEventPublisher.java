@@ -1,28 +1,23 @@
 package com.jian.hobbyadventure.service;
 
 import com.jian.hobbyadventure.dto.message.ViewEventMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ExplorationViewEventPublisher {
 
-    private final SqsAsyncClient sqsAsyncClient;
-    private final JsonMapper jsonMapper;
+    private static final int QUEUE_CAPACITY = 2000;
 
-    @Value("${aws.sqs.view-event-queue-url}")
-    private String queueUrl;
+    private final BlockingQueue<ViewEventMessage> pendingEvents = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
 
     public void publish(Long explorationId) {
         ViewEventMessage message = new ViewEventMessage(
@@ -31,21 +26,14 @@ public class ExplorationViewEventPublisher {
                 LocalDateTime.now()
         );
 
-        String body;
-        try {
-            body = jsonMapper.writeValueAsString(message);
-        } catch (JacksonException e) {
-            log.error("조회 이벤트 메시지 직렬화 실패, explorationId={}", explorationId, e);
-            return;
+        if (!pendingEvents.offer(message)) {
+            log.warn("조회 이벤트 큐가 가득 차서 유실됨, explorationId={}", explorationId);
         }
+    }
 
-        sqsAsyncClient.sendMessage(SendMessageRequest.builder()
-                        .queueUrl(queueUrl)
-                        .messageBody(body)
-                        .build())
-                .exceptionally(ex -> {
-                    log.error("조회 이벤트 발행 실패, explorationId={}", explorationId, ex);
-                    return null;
-                });
+    public List<ViewEventMessage> drain(int maxElements) {
+        List<ViewEventMessage> drained = new ArrayList<>(maxElements);
+        pendingEvents.drainTo(drained, maxElements);
+        return drained;
     }
 }
