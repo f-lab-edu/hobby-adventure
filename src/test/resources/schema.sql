@@ -29,6 +29,7 @@ CREATE TABLE explorations
     thumbnail_url     VARCHAR(500),
     short_description VARCHAR(500) NOT NULL,
     description       TEXT         NOT NULL,
+    view_count        BIGINT       NOT NULL DEFAULT 0,
     created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT fk_explorations_category FOREIGN KEY (category_id) REFERENCES categories (category_id)
@@ -73,3 +74,23 @@ CREATE TABLE record_images
     PRIMARY KEY (id),
     CONSTRAINT fk_record_images_record FOREIGN KEY (record_id) REFERENCES records (id)
 );
+
+CREATE TABLE exploration_views
+(
+    id             BIGINT      NOT NULL AUTO_INCREMENT,
+    view_event_id  VARCHAR(36) NOT NULL,
+    exploration_id BIGINT      NOT NULL,
+    viewed_at      TIMESTAMP   NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_exploration_views_view_event_id UNIQUE (view_event_id),
+    CONSTRAINT fk_exploration_views_exploration FOREIGN KEY (exploration_id) REFERENCES explorations (id)
+);
+
+CREATE TABLE view_aggregation_watermark
+(
+    id                BIGINT NOT NULL,
+    last_processed_id BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO view_aggregation_watermark (id, last_processed_id) VALUES (1, 0);
