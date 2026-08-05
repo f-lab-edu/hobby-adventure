@@ -6,6 +6,15 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     username: hobby_user
     password: hobby_pass
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: ${AWS_SQS_ACCESS_KEY}
+        secret-key: ${AWS_SQS_SECRET_KEY}
+      sqs:
+        endpoint: ${AWS_SQS_ENDPOINT}
 
 springdoc:
   swagger-ui:

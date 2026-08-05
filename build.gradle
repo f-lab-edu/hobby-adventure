@@ -47,6 +47,10 @@ dependencies {
 	implementation 'software.amazon.awssdk:cloudfront'
 	implementation 'software.amazon.awssdk:sqs'
 	implementation 'software.amazon.awssdk:apache-client'
+
+	// Spring Cloud AWS (SQS 컨슈머 전용 - @SqsListener)
+	implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.1.0')
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
 }
 
 tasks.named('test') {
