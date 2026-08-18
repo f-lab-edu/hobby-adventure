@@ -31,6 +31,7 @@ public class ExplorationService {
     private final UserMapper userMapper;
     private final UserExplorationMapper userExplorationMapper;
     private final ImageService imageService;
+    private final ExplorationViewEventPublisher viewEventPublisher;
 
     public PageResponse<ExplorationListItemResponse> getExplorations(Long categoryId, int page, int size) {
         int offset = (page - 1) * size;
@@ -64,6 +65,7 @@ public class ExplorationService {
         Exploration exploration = explorationMapper.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
         Category category = categoryMapper.findById(exploration.getCategoryId());
+        viewEventPublisher.publish(id);
         return ExplorationDetailResponse.from(exploration, category.getName(), resolveThumbnailUrl(exploration, ImageSize.DETAIL));
     }
 

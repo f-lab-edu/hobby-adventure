@@ -31,6 +31,7 @@ CREATE TABLE explorations
     thumbnail_url     VARCHAR(500),
     short_description VARCHAR(500) NOT NULL,
     description       TEXT         NOT NULL,
+    view_count        BIGINT       NOT NULL DEFAULT 0,
     created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT fk_explorations_category FOREIGN KEY (category_id) REFERENCES categories (category_id)
@@ -74,4 +75,11 @@ CREATE TABLE record_images
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT fk_record_images_record FOREIGN KEY (record_id) REFERENCES records (id)
+);
+
+CREATE TABLE processed_view_events
+(
+    view_event_id VARCHAR(36) NOT NULL,
+    created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (view_event_id)
 );

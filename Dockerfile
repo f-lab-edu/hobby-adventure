@@ -3,7 +3,6 @@ ARG JAR_FILE=build/libs/*.jar
 WORKDIR /app
 COPY ${JAR_FILE} app.jar
 ENTRYPOINT ["java", \
-            "-XX:-UseContainerSupport", \
             "-jar", \
             "-Dspring.profiles.active=docker", \
             "app.jar"]

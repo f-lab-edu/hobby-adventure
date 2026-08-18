@@ -43,6 +43,8 @@ class ExplorationServiceTest {
     private UserExplorationMapper userExplorationMapper;
     @Mock
     private ImageService imageService;
+    @Mock
+    private ExplorationViewEventPublisher viewEventPublisher;
 
     @InjectMocks
     private ExplorationService explorationService;
