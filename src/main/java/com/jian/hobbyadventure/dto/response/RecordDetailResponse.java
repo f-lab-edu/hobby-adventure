@@ -27,12 +27,12 @@ public class RecordDetailResponse {
     private final String emotionLabel;
     private final String placeName;
     private final String content;
-    private final List<String> imageUrls;
+    private final List<RecordImageResponse> images;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
     public static RecordDetailResponse from(Record record, UserExploration ue, Exploration exploration,
-                                            String categoryName, List<String> imageUrls) {
+                                            String categoryName, List<RecordImageResponse> images) {
         return new RecordDetailResponse(
                 record.getId(),
                 ue.getId(),
@@ -47,7 +47,7 @@ public class RecordDetailResponse {
                 record.getEmotionCode().getLabel(),
                 record.getPlaceName(),
                 record.getContent(),
-                imageUrls,
+                images,
                 record.getCreatedAt(),
                 record.getUpdatedAt()
         );

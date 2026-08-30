@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -24,4 +25,7 @@ public class UpdateRecordRequest {
     private Emotion emotionCode;
     private String placeName;
     private String content;
+
+    // 삭제할 기존 사진 id 목록 (선택 사항, 없으면 삭제 없음)
+    private List<Long> deleteImageIds;
 }

@@ -17,6 +17,7 @@ import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
+import com.jian.hobbyadventure.dto.response.RecordImageResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
@@ -81,7 +82,7 @@ public class RecordService {
         recordMapper.insert(record);
 
         if (images != null && !images.isEmpty()) {
-            saveRecordImages(record.getId(), images);
+            saveRecordImages(record.getId(), images, 1);
         }
 
         return new CreateRecordResponse(record.getId());
@@ -147,19 +148,15 @@ public class RecordService {
 
         Category category = categoryMapper.findById(exploration.getCategoryId());
 
-        List<String> imageUrls = recordImageMapper.findAllByRecordId(recordId).stream()
-                .map(img -> imageService.generateSignedCloudFrontUrl(img.getImageUrl(), ImageSize.DETAIL))
+        List<RecordImageResponse> images = recordImageMapper.findAllByRecordId(recordId).stream()
+                .map(img -> new RecordImageResponse(img.getId(), imageService.generateSignedCloudFrontUrl(img.getImageUrl(), ImageSize.DETAIL)))
                 .toList();
 
-        return RecordDetailResponse.from(record, userExploration, exploration, category.getName(), imageUrls);
+        return RecordDetailResponse.from(record, userExploration, exploration, category.getName(), images);
     }
 
     @Transactional
     public UpdateRecordResponse updateRecord(Long userId, Long recordId, UpdateRecordRequest request, List<MultipartFile> newImages) {
-        if (newImages != null && newImages.size() > MAX_IMAGE_COUNT) {
-            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
-        }
-
         Record record = recordMapper.findById(recordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
@@ -168,6 +165,23 @@ public class RecordService {
 
         if (!userExploration.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        List<RecordImage> currentImages = recordImageMapper.findAllByRecordId(recordId);
+        List<Long> deleteImageIds = request.getDeleteImageIds() != null ? request.getDeleteImageIds() : List.of();
+        int newImageCount = newImages != null ? newImages.size() : 0;
+
+        Map<Long, RecordImage> currentImageMap = currentImages.stream()
+                .collect(Collectors.toMap(RecordImage::getId, img -> img));
+        for (Long imageId : deleteImageIds) {
+            if (!currentImageMap.containsKey(imageId)) {
+                throw new BusinessException(ErrorCode.NOT_FOUND);
+            }
+        }
+
+        int resultingImageCount = currentImages.size() - deleteImageIds.size() + newImageCount;
+        if (resultingImageCount > MAX_IMAGE_COUNT) {
+            throw new BusinessException(ErrorCode.IMAGE_LIMIT_EXCEEDED);
         }
 
         if (request.getTitle() != null) record.setTitle(request.getTitle());
@@ -182,16 +196,21 @@ public class RecordService {
 
         recordMapper.update(record);
 
-        if (newImages != null) {
-            List<String> oldImageKeys = recordImageMapper.findAllByRecordId(recordId).stream()
-                    .map(RecordImage::getImageUrl)
+        if (!deleteImageIds.isEmpty()) {
+            List<String> deletedKeys = deleteImageIds.stream()
+                    .map(id -> currentImageMap.get(id).getImageUrl())
                     .toList();
+            deleteImageIds.forEach(recordImageMapper::deleteById);
+            imageService.deleteImages(deletedKeys);
+        }
 
-            recordImageMapper.deleteAllByRecordId(recordId);
-            if (!newImages.isEmpty()) {
-                saveRecordImages(recordId, newImages);
-            }
-            imageService.deleteImages(oldImageKeys);
+        if (newImageCount > 0) {
+            int maxRemainingOrder = currentImages.stream()
+                    .filter(img -> !deleteImageIds.contains(img.getId()))
+                    .mapToInt(RecordImage::getImageOrder)
+                    .max()
+                    .orElse(0);
+            saveRecordImages(recordId, newImages, maxRemainingOrder + 1);
         }
 
         return new UpdateRecordResponse(recordId);
@@ -233,14 +252,14 @@ public class RecordService {
         }
     }
 
-    private void saveRecordImages(Long recordId, List<MultipartFile> files) {
+    private void saveRecordImages(Long recordId, List<MultipartFile> files, int startOrder) {
         List<String> relativePaths = imageService.saveImages(recordId, files);
         List<RecordImage> recordImages = new ArrayList<>();
         for (int i = 0; i < relativePaths.size(); i++) {
             RecordImage ri = new RecordImage();
             ri.setRecordId(recordId);
             ri.setImageUrl(relativePaths.get(i));
-            ri.setImageOrder(i + 1);
+            ri.setImageOrder(startOrder + i);
             recordImages.add(ri);
         }
         recordImageMapper.insertAll(recordImages);
