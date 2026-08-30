@@ -125,7 +125,7 @@ class RecordControllerTest {
     @Test
     void updateRecord_성공_시_200을_반환한다() throws Exception {
         MockMultipartFile requestPart = new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(new UpdateRecordRequest("new title", null, null, null, null, null)));
+                objectMapper.writeValueAsBytes(new UpdateRecordRequest("new title", null, null, null, null, null, null)));
         when(recordService.updateRecord(anyLong(), anyLong(), any(), any())).thenReturn(new UpdateRecordResponse(1L));
 
         mockMvc.perform(multipart("/api/v1/records/1").file(requestPart)

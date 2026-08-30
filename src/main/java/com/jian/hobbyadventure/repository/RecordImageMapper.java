@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface RecordImageMapper {
@@ -26,4 +27,7 @@ public interface RecordImageMapper {
 
     @Delete("DELETE FROM record_images WHERE record_id = #{recordId}")
     void deleteAllByRecordId(Long recordId);
+
+    @Delete("DELETE FROM record_images WHERE id = #{imageId}")
+    void deleteById(Long imageId);
 }

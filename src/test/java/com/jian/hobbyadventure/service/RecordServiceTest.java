@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -173,7 +174,7 @@ class RecordServiceTest {
 
         assertThat(result.getRecordId()).isEqualTo(1L);
         assertThat(result.getCategoryName()).isEqualTo("학습");
-        assertThat(result.getImageUrls()).isEmpty();
+        assertThat(result.getImages()).isEmpty();
     }
 
     @Test
@@ -249,8 +250,9 @@ class RecordServiceTest {
         Record savedRecord = createRecord(1L, 1L);
         when(recordMapper.findById(1L)).thenReturn(Optional.of(savedRecord));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of());
 
-        UpdateRecordResponse result = recordService.updateRecord(1L, 1L, new UpdateRecordRequest("new title", null, null, null, null, null), null);
+        UpdateRecordResponse result = recordService.updateRecord(1L, 1L, new UpdateRecordRequest("new title", null, null, null, null, null, null), null);
 
         assertThat(result.getRecordId()).isEqualTo(1L);
         verify(recordMapper).update(savedRecord);
@@ -260,7 +262,7 @@ class RecordServiceTest {
     void updateRecord_존재하지_않는_기록_시_NOT_FOUND를_던진다() {
         when(recordMapper.findById(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), null))
+        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null, null), null))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.NOT_FOUND);
@@ -271,40 +273,84 @@ class RecordServiceTest {
         when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 2L, 10L, ExplorationStatus.COMPLETED)));
 
-        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), null))
+        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null, null), null))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.FORBIDDEN);
     }
 
     @Test
-    void updateRecord_이미지가_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
+    void updateRecord_삭제할_사진_id가_존재하지_않으면_NOT_FOUND를_던진다() {
+        when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
+        when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of());
+
+        UpdateRecordRequest request = new UpdateRecordRequest(null, null, null, null, null, null, List.of(999L));
+
+        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, request, null))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_FOUND);
+    }
+
+    @Test
+    void updateRecord_기존사진과_삭제요청_새사진을_합쳐서_10장_초과면_IMAGE_LIMIT_EXCEEDED를_던진다() {
+        when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
+        when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of());
+
         List<MultipartFile> images = List.of(mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class),
                 mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class), mock(MultipartFile.class));
+        UpdateRecordRequest request = new UpdateRecordRequest(null, null, null, null, null, null, null);
 
-        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), images))
+        assertThatThrownBy(() -> recordService.updateRecord(1L, 1L, request, images))
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.IMAGE_LIMIT_EXCEEDED);
     }
 
     @Test
-    void updateRecord_이미지_교체_시_DB삭제와_새이미지_저장_이후에_옛이미지가_S3에서_삭제된다() {
+    void updateRecord_새사진만_추가하면_기존사진은_그대로_유지된다() {
         when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
         when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
-        RecordImage oldImage = new RecordImage();
-        oldImage.setImageUrl("records/1/old.jpg");
-        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of(oldImage));
+        RecordImage existingImage = createRecordImage(1L, "records/1/old.jpg", 1);
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of(existingImage));
         MultipartFile newFile = mock(MultipartFile.class);
         when(imageService.saveImages(eq(1L), anyList())).thenReturn(List.of("records/1/new.jpg"));
 
-        recordService.updateRecord(1L, 1L, new UpdateRecordRequest(null, null, null, null, null, null), List.of(newFile));
+        UpdateRecordRequest request = new UpdateRecordRequest(null, null, null, null, null, null, null);
+        recordService.updateRecord(1L, 1L, request, List.of(newFile));
 
-        InOrder inOrder = inOrder(recordImageMapper, imageService);
-        inOrder.verify(recordImageMapper).deleteAllByRecordId(1L);
-        inOrder.verify(imageService).saveImages(eq(1L), anyList());
-        inOrder.verify(imageService).deleteImages(List.of("records/1/old.jpg"));
+        verify(recordImageMapper, never()).deleteById(any());
+        verify(imageService, never()).deleteImages(any());
+        verify(recordImageMapper).insertAll(anyList());
+    }
+
+    @Test
+    void updateRecord_삭제할_사진_id만_지워지고_나머지는_유지된다() {
+        when(recordMapper.findById(1L)).thenReturn(Optional.of(createRecord(1L, 1L)));
+        when(userExplorationMapper.findById(1L)).thenReturn(Optional.of(createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED)));
+        RecordImage toDelete = createRecordImage(1L, "records/1/a.jpg", 1);
+        RecordImage toKeep = createRecordImage(2L, "records/1/b.jpg", 2);
+        when(recordImageMapper.findAllByRecordId(1L)).thenReturn(List.of(toDelete, toKeep));
+
+        UpdateRecordRequest request = new UpdateRecordRequest(null, null, null, null, null, null, List.of(1L));
+        recordService.updateRecord(1L, 1L, request, null);
+
+        verify(recordImageMapper).deleteById(1L);
+        verify(recordImageMapper, never()).deleteById(2L);
+        verify(imageService).deleteImages(List.of("records/1/a.jpg"));
+        verify(recordImageMapper, never()).insertAll(anyList());
+    }
+
+    private RecordImage createRecordImage(Long id, String url, int order) {
+        RecordImage image = new RecordImage();
+        image.setId(id);
+        image.setRecordId(1L);
+        image.setImageUrl(url);
+        image.setImageOrder(order);
+        return image;
     }
 
     @Test
