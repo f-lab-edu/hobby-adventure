@@ -15,10 +15,10 @@ public interface ExplorationMapper {
     @Update("UPDATE explorations SET view_count = view_count + #{delta} WHERE id = #{explorationId}")
     void incrementViewCount(@Param("explorationId") Long explorationId, @Param("delta") Long delta);
 
-    @Select("SELECT * FROM explorations ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}")
+    @Select("SELECT * FROM explorations ORDER BY created_at DESC, id DESC LIMIT #{size} OFFSET #{offset}")
     List<Exploration> findAll(@Param("size") int size, @Param("offset") int offset);
 
-    @Select("SELECT * FROM explorations WHERE category_id = #{categoryId} ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}")
+    @Select("SELECT * FROM explorations WHERE category_id = #{categoryId} ORDER BY created_at DESC, id DESC LIMIT #{size} OFFSET #{offset}")
     List<Exploration> findAllByCategoryId(@Param("categoryId") Long categoryId, @Param("size") int size, @Param("offset") int offset);
 
     @Select("SELECT * FROM explorations WHERE id = #{id}")

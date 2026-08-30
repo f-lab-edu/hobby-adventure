@@ -17,8 +17,8 @@
             </if>
         </where>
         <choose>
-            <when test="status.name() == 'STARTED'">ORDER BY created_at DESC</when>
-            <otherwise>ORDER BY completed_at DESC</otherwise>
+            <when test="status.name() == 'STARTED'">ORDER BY created_at DESC, id DESC</when>
+            <otherwise>ORDER BY completed_at DESC, id DESC</otherwise>
         </choose>
         LIMIT #{size} OFFSET #{offset}
     </select>
