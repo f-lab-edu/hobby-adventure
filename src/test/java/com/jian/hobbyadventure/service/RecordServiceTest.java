@@ -224,7 +224,7 @@ class RecordServiceTest {
     }
 
     @Test
-    void getRecords_record_이미지가_없으면_exploration_썸네일로_대체된다() {
+    void getRecords_record_이미지가_없으면_썸네일이_null이다() {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration exploration = createExploration(10L, 5L);
         exploration.setThumbnailUrl(FALLBACK_THUMBNAIL_URL);
@@ -237,12 +237,11 @@ class RecordServiceTest {
         when(userExplorationMapper.findByIdIn(List.of(1L))).thenReturn(List.of(ue));
         when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(exploration));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(5L, "학습")));
-        when(imageService.generatePublicCloudFrontUrl(FALLBACK_THUMBNAIL_URL, ImageSize.LIST)).thenReturn("https://public/fallback.jpg");
 
         PageResponse<RecordListItemResponse> result = recordService.getRecords(1L, new RecordSearchCondition(null, null), 1, 10);
 
         assertThat(result.getData()).hasSize(1);
-        assertThat(result.getData().get(0).getThumbnailUrl()).isEqualTo("https://public/fallback.jpg");
+        assertThat(result.getData().get(0).getThumbnailUrl()).isNull();
     }
 
     @Test

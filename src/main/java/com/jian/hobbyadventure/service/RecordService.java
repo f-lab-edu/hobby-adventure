@@ -123,8 +123,7 @@ public class RecordService {
                     UserExploration ue = ueMap.get(record.getUserExplorationId());
                     Exploration exploration = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(exploration.getCategoryId());
-                    String thumbUrl = thumbnailMap.getOrDefault(record.getId(),
-                            exploration.getThumbnailUrl() != null ? imageService.generatePublicCloudFrontUrl(exploration.getThumbnailUrl(), ImageSize.LIST) : null);
+                    String thumbUrl = thumbnailMap.get(record.getId());
                     return RecordListItemResponse.from(record, ue, exploration, categoryName, thumbUrl);
                 })
                 .toList();
