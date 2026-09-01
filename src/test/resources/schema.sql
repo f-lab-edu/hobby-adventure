@@ -88,7 +88,7 @@ CREATE TABLE waypoints
     user_exploration_id BIGINT    NOT NULL,
     memo                TEXT,
     place_name          VARCHAR(255),
-    checked_at          DATETIME  NOT NULL,
+    checked_at          TIMESTAMP NOT NULL,
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
