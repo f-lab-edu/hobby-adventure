@@ -8,11 +8,13 @@ import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
+import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
+import com.jian.hobbyadventure.repository.UserExplorationCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -157,6 +159,32 @@ class MyExplorationServiceTest {
         assertThat(result.getData()).isEmpty();
         assertThat(result.getMeta().getTotalElements()).isZero();
         verify(userExplorationMapper, org.mockito.Mockito.never()).findAllByCondition(any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void getCompletedExplorationCounts_탐험별로_묶어서_개수를_반환한다() {
+        UserExplorationCountRow row = new UserExplorationCountRow();
+        row.setExplorationId(10L);
+        row.setCount(3);
+        Exploration e = createExploration(10L, 1L);
+        when(userExplorationMapper.countGroupByExplorationId(1L, ExplorationStatus.COMPLETED)).thenReturn(List.of(row));
+        when(explorationMapper.findByIdIn(List.of(10L))).thenReturn(List.of(e));
+
+        List<ExplorationCountResponse> result = myExplorationService.getCompletedExplorationCounts(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getExplorationId()).isEqualTo(10L);
+        assertThat(result.get(0).getTitle()).isEqualTo("탐험 제목");
+        assertThat(result.get(0).getCount()).isEqualTo(3);
+    }
+
+    @Test
+    void getCompletedExplorationCounts_완료한_탐험이_없으면_빈목록을_반환한다() {
+        when(userExplorationMapper.countGroupByExplorationId(1L, ExplorationStatus.COMPLETED)).thenReturn(List.of());
+
+        List<ExplorationCountResponse> result = myExplorationService.getCompletedExplorationCounts(1L);
+
+        assertThat(result).isEmpty();
     }
 
     @Test

@@ -53,4 +53,11 @@
         SELECT id FROM user_explorations WHERE user_id = #{userId} AND status = #{status}
     </select>
 
+    <select id="countGroupByExplorationId" resultType="com.jian.hobbyadventure.repository.UserExplorationCountRow">
+        SELECT exploration_id AS explorationId, COUNT(*) AS count
+        FROM user_explorations
+        WHERE user_id = #{userId} AND status = #{status}
+        GROUP BY exploration_id
+    </select>
+
 </mapper>

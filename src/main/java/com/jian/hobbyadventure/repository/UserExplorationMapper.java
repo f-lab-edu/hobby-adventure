@@ -37,6 +37,8 @@ public interface UserExplorationMapper {
 
     List<Long> findIdsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ExplorationStatus status);
 
+    List<UserExplorationCountRow> countGroupByExplorationId(@Param("userId") Long userId, @Param("status") ExplorationStatus status);
+
     @Select("SELECT * FROM user_explorations WHERE id = #{id}")
     Optional<UserExploration> findById(Long id);
 

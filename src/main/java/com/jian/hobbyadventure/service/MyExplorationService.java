@@ -11,11 +11,13 @@ import com.jian.hobbyadventure.domain.UserExploration;
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
+import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
+import com.jian.hobbyadventure.repository.UserExplorationCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -94,6 +96,22 @@ public class MyExplorationService {
             return new ArrayList<>(recordedIds);
         }
         return completedIds.stream().filter(id -> !recordedIds.contains(id)).toList();
+    }
+
+    // 완료 탐험을 탐험(explorationId) 단위로 묶어서 개수만 반환 — "탐험별 필터" 드롭다운용, user_explorations 한 테이블만 GROUP BY(JOIN 없음)
+    public List<ExplorationCountResponse> getCompletedExplorationCounts(Long userId) {
+        List<UserExplorationCountRow> rows = userExplorationMapper.countGroupByExplorationId(userId, ExplorationStatus.COMPLETED);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> explorationIds = rows.stream().map(UserExplorationCountRow::getExplorationId).toList();
+        Map<Long, String> titleMap = explorationMapper.findByIdIn(explorationIds).stream()
+                .collect(Collectors.toMap(Exploration::getId, Exploration::getTitle));
+
+        return rows.stream()
+                .map(row -> ExplorationCountResponse.from(row.getExplorationId(), titleMap.get(row.getExplorationId()), row.getCount()))
+                .toList();
     }
 
     public MyExplorationDetailResponse getMyExploration(Long userId, Long userExplorationId) {
