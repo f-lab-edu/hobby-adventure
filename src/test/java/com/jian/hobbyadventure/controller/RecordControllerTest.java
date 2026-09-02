@@ -12,6 +12,7 @@ import com.jian.hobbyadventure.dto.request.CreateRecordRequest;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
+import com.jian.hobbyadventure.dto.response.RecordArchiveCountResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
@@ -87,6 +88,17 @@ class RecordControllerTest {
 
         mockMvc.perform(multipart("/api/v1/records").file(requestPart).header("X-User-Id", 1L))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getArchiveCounts_성공_시_200을_반환한다() throws Exception {
+        when(recordService.getArchiveCounts(1L))
+                .thenReturn(List.of(RecordArchiveCountResponse.from("2026-09", 3)));
+
+        mockMvc.perform(get("/api/v1/records/archive-counts").header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].month").value("2026-09"))
+                .andExpect(jsonPath("$.data[0].count").value(3));
     }
 
     @Test

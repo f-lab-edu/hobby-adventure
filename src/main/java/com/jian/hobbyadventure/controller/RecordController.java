@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.dto.request.RecordSearchCondition;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
+import com.jian.hobbyadventure.dto.response.RecordArchiveCountResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
@@ -51,6 +52,14 @@ public class RecordController {
             @RequestParam(defaultValue = "10") int size) {
         RecordSearchCondition condition = new RecordSearchCondition(categoryId, explorationId);
         return ResponseEntity.ok(recordService.getRecords(userId, condition, page, size));
+    }
+
+    @Operation(summary = "기록 아카이브 월별 개수 조회")
+    @ApiResponse(responseCode = "200", description = "조회 성공 (데이터 없을 경우 빈 배열 반환)")
+    @GetMapping("/archive-counts")
+    public ResponseEntity<CommonResponse<List<RecordArchiveCountResponse>>> getArchiveCounts(
+            @RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(CommonResponse.of(recordService.getArchiveCounts(userId)));
     }
 
     @Operation(summary = "기록 단건 조회")

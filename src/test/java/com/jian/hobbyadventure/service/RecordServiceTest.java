@@ -17,10 +17,12 @@ import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
+import com.jian.hobbyadventure.dto.response.RecordArchiveCountResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordImageMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
+import com.jian.hobbyadventure.repository.RecordMonthCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -160,6 +162,30 @@ class RecordServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+    }
+
+    @Test
+    void getArchiveCounts_월별로_묶어서_개수를_반환한다() {
+        RecordMonthCountRow row = new RecordMonthCountRow();
+        row.setMonth("2026-09");
+        row.setCount(3);
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L, 2L));
+        when(recordMapper.countGroupByMonth(List.of(1L, 2L))).thenReturn(List.of(row));
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getMonth()).isEqualTo("2026-09");
+        assertThat(result.get(0).getCount()).isEqualTo(3);
+    }
+
+    @Test
+    void getArchiveCounts_참여한_탐험이_없으면_빈목록을_반환한다() {
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of());
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
