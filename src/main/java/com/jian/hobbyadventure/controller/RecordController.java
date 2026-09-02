@@ -58,8 +58,9 @@ public class RecordController {
     @ApiResponse(responseCode = "200", description = "조회 성공 (데이터 없을 경우 빈 배열 반환)")
     @GetMapping("/archive-counts")
     public ResponseEntity<CommonResponse<List<RecordArchiveCountResponse>>> getArchiveCounts(
-            @RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok(CommonResponse.of(recordService.getArchiveCounts(userId)));
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(CommonResponse.of(recordService.getArchiveCounts(userId, categoryId)));
     }
 
     @Operation(summary = "기록 단건 조회")

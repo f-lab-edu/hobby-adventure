@@ -165,14 +165,14 @@ class RecordServiceTest {
     }
 
     @Test
-    void getArchiveCounts_월별로_묶어서_개수를_반환한다() {
+    void getArchiveCounts_카테고리_필터_없으면_전체_기준으로_월별_개수를_반환한다() {
         RecordMonthCountRow row = new RecordMonthCountRow();
         row.setMonth("2026-09");
         row.setCount(3);
         when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L, 2L));
         when(recordMapper.countGroupByMonth(List.of(1L, 2L))).thenReturn(List.of(row));
 
-        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L);
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getMonth()).isEqualTo("2026-09");
@@ -180,10 +180,25 @@ class RecordServiceTest {
     }
 
     @Test
+    void getArchiveCounts_카테고리_필터가_있으면_그_카테고리_탐험의_기록만_집계한다() {
+        RecordMonthCountRow row = new RecordMonthCountRow();
+        row.setMonth("2026-09");
+        row.setCount(1);
+        when(explorationMapper.findIdsByCategoryId(5L)).thenReturn(List.of(10L));
+        when(userExplorationMapper.findIdsByUserIdAndExplorationIds(1L, List.of(10L))).thenReturn(List.of(1L));
+        when(recordMapper.countGroupByMonth(List.of(1L))).thenReturn(List.of(row));
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, 5L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getCount()).isEqualTo(1);
+    }
+
+    @Test
     void getArchiveCounts_참여한_탐험이_없으면_빈목록을_반환한다() {
         when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of());
 
-        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L);
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, null);
 
         assertThat(result).isEmpty();
     }

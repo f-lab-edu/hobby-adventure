@@ -132,8 +132,8 @@ public class RecordService {
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
     }
 
-    public List<RecordArchiveCountResponse> getArchiveCounts(Long userId) {
-        List<Long> userExplorationIds = userExplorationMapper.findIdsByUserId(userId);
+    public List<RecordArchiveCountResponse> getArchiveCounts(Long userId, Long categoryId) {
+        List<Long> userExplorationIds = filterUserExplorationIds(userId, new RecordSearchCondition(categoryId, null));
         if (userExplorationIds.isEmpty()) {
             return List.of();
         }
