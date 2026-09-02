@@ -83,13 +83,13 @@ class MyExplorationServiceTest {
     void getMyExplorations_categoryId가_null이면_전체_목록을_반환한다() {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.STARTED);
         Exploration e = createExploration(10L, 1L);
-        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
-        when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any(), any())).thenReturn(1L);
         when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
         when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
-        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, null, null, 1, 10);
+        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, null, null, null, 1, 10);
 
         assertThat(result.getData()).hasSize(1);
         assertThat(result.getData().get(0).getCategoryName()).isEqualTo("운동");
@@ -100,13 +100,13 @@ class MyExplorationServiceTest {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.STARTED);
         Exploration e = createExploration(10L, 1L);
         when(explorationMapper.findIdsByCategoryId(1L)).thenReturn(List.of(10L));
-        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
-        when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any(), any())).thenReturn(1L);
         when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
         when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
-        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, 1L, null, 1, 10);
+        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, 1L, null, null, 1, 10);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -115,16 +115,48 @@ class MyExplorationServiceTest {
     void getMyExplorations_explorationId가_있으면_categoryId보다_우선한다() {
         UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
         Exploration e = createExploration(10L, 1L);
-        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
-        when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any(), any())).thenReturn(1L);
         when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
         when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
-        myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, 999L, 10L, 1, 10);
+        myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, 999L, 10L, null, 1, 10);
 
-        verify(userExplorationMapper).findAllByCondition(1L, ExplorationStatus.COMPLETED, List.of(10L), 10, 0);
+        verify(userExplorationMapper).findAllByCondition(1L, ExplorationStatus.COMPLETED, List.of(10L), null, 10, 0);
         verify(explorationMapper, org.mockito.Mockito.never()).findIdsByCategoryId(any());
+    }
+
+    @Test
+    void getMyExplorations_hasRecord_false면_기록없는_completed만_반환한다() {
+        UserExploration ue = createUserExploration(2L, 1L, 10L, ExplorationStatus.COMPLETED);
+        Exploration e = createExploration(10L, 1L);
+        when(userExplorationMapper.findIdsByUserIdAndStatus(1L, ExplorationStatus.COMPLETED)).thenReturn(List.of(1L, 2L));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(List.of(1L, 2L))).thenReturn(List.of(1L));
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any(), any())).thenReturn(1L);
+        when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
+        when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(List.of(2L))).thenReturn(List.of());
+
+        PageResponse<MyExplorationListItemResponse> result =
+                myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, null, null, false, 1, 10);
+
+        assertThat(result.getData()).hasSize(1);
+        verify(userExplorationMapper).findAllByCondition(1L, ExplorationStatus.COMPLETED, null, List.of(2L), 10, 0);
+    }
+
+    @Test
+    void getMyExplorations_hasRecord_false인데_전부_기록있으면_DB조회없이_빈목록을_반환한다() {
+        when(userExplorationMapper.findIdsByUserIdAndStatus(1L, ExplorationStatus.COMPLETED)).thenReturn(List.of(1L));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(List.of(1L))).thenReturn(List.of(1L));
+
+        PageResponse<MyExplorationListItemResponse> result =
+                myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, null, null, false, 1, 10);
+
+        assertThat(result.getData()).isEmpty();
+        assertThat(result.getMeta().getTotalElements()).isZero();
+        verify(userExplorationMapper, org.mockito.Mockito.never()).findAllByCondition(any(), any(), any(), any(), anyInt(), anyInt());
     }
 
     @Test

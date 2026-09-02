@@ -30,9 +30,10 @@ public class MyExplorationController {
             @RequestParam ExplorationStatus status,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long explorationId,
+            @RequestParam(required = false) Boolean hasRecord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(myExplorationService.getMyExplorations(userId, status, categoryId, explorationId, page, size));
+        return ResponseEntity.ok(myExplorationService.getMyExplorations(userId, status, categoryId, explorationId, hasRecord, page, size));
     }
 
     @Operation(summary = "내 탐험 단건 조회")

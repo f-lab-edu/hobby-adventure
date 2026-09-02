@@ -20,6 +20,7 @@ import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class MyExplorationService {
     private final RecordMapper recordMapper;
     private final ImageService imageService;
 
-    public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, Long explorationId, int page, int size) {
+    public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, Long explorationId, Boolean hasRecord, int page, int size) {
         int offset = (page - 1) * size;
 
         List<Long> explorationIds = null;
@@ -47,8 +48,17 @@ public class MyExplorationService {
             explorationIds = explorationMapper.findIdsByCategoryId(categoryId);
         }
 
-        List<UserExploration> userExplorations = userExplorationMapper.findAllByCondition(userId, status, explorationIds, size, offset);
-        long totalElements = userExplorationMapper.countByCondition(userId, status, explorationIds);
+        // hasRecord는 COMPLETED에만 의미가 있음 — 기록 유무로 먼저 userExploration id를 걸러서 그 안에서만 조회
+        List<Long> userExplorationIds = null;
+        if (status == ExplorationStatus.COMPLETED && hasRecord != null) {
+            userExplorationIds = filterIdsByHasRecord(userId, hasRecord);
+            if (userExplorationIds.isEmpty()) {
+                return PageResponse.of(List.of(), PageMeta.of(page, size, 0));
+            }
+        }
+
+        List<UserExploration> userExplorations = userExplorationMapper.findAllByCondition(userId, status, explorationIds, userExplorationIds, size, offset);
+        long totalElements = userExplorationMapper.countByCondition(userId, status, explorationIds, userExplorationIds);
 
         List<Long> ids = userExplorations.stream().map(UserExploration::getExplorationId).toList();
         Map<Long, Exploration> explorationMap = ids.isEmpty() ? Map.of() :
@@ -71,6 +81,19 @@ public class MyExplorationService {
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
+    }
+
+    // JOIN 없이: 완료한 전체 id를 먼저 뽑고, 그중 기록 있는 id를 recordMapper로 따로 조회해서 Java에서 차집합
+    private List<Long> filterIdsByHasRecord(Long userId, boolean hasRecord) {
+        List<Long> completedIds = userExplorationMapper.findIdsByUserIdAndStatus(userId, ExplorationStatus.COMPLETED);
+        if (completedIds.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> recordedIds = new HashSet<>(recordMapper.findUserExplorationIdsByUserExplorationIdIn(completedIds));
+        if (hasRecord) {
+            return new ArrayList<>(recordedIds);
+        }
+        return completedIds.stream().filter(id -> !recordedIds.contains(id)).toList();
     }
 
     public MyExplorationDetailResponse getMyExploration(Long userId, Long userExplorationId) {

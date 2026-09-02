@@ -15,6 +15,12 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="userExplorationIds != null">
+                AND id IN
+                <foreach collection="userExplorationIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         <choose>
             <when test="status.name() == 'STARTED'">ORDER BY created_at DESC, id DESC</when>
@@ -34,8 +40,17 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="userExplorationIds != null">
+                AND id IN
+                <foreach collection="userExplorationIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </select>
 
+    <select id="findIdsByUserIdAndStatus" resultType="long">
+        SELECT id FROM user_explorations WHERE user_id = #{userId} AND status = #{status}
+    </select>
 
 </mapper>
