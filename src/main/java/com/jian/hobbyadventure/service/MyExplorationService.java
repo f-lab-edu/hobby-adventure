@@ -36,11 +36,14 @@ public class MyExplorationService {
     private final RecordMapper recordMapper;
     private final ImageService imageService;
 
-    public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, int page, int size) {
+    public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, Long explorationId, int page, int size) {
         int offset = (page - 1) * size;
 
         List<Long> explorationIds = null;
-        if (categoryId != null) {
+        if (explorationId != null) {
+            // 특정 탐험 하나만 지정된 경우 — 카테고리보다 더 좁은 조건이라 그대로 우선
+            explorationIds = List.of(explorationId);
+        } else if (categoryId != null) {
             explorationIds = explorationMapper.findIdsByCategoryId(categoryId);
         }
 
@@ -62,8 +65,8 @@ public class MyExplorationService {
                 .map(ue -> {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
-                    Boolean hasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
-                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e, ImageSize.LIST), hasRecord);
+                    Boolean rowHasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
+                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e, ImageSize.LIST), rowHasRecord);
                 })
                 .toList();
 

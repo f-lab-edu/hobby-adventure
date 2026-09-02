@@ -89,7 +89,7 @@ class MyExplorationServiceTest {
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
         when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
-        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, null, 1, 10);
+        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, null, null, 1, 10);
 
         assertThat(result.getData()).hasSize(1);
         assertThat(result.getData().get(0).getCategoryName()).isEqualTo("운동");
@@ -106,9 +106,25 @@ class MyExplorationServiceTest {
         when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
         when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
 
-        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, 1L, 1, 10);
+        PageResponse<MyExplorationListItemResponse> result = myExplorationService.getMyExplorations(1L, ExplorationStatus.STARTED, 1L, null, 1, 10);
 
         assertThat(result.getData()).hasSize(1);
+    }
+
+    @Test
+    void getMyExplorations_explorationId가_있으면_categoryId보다_우선한다() {
+        UserExploration ue = createUserExploration(1L, 1L, 10L, ExplorationStatus.COMPLETED);
+        Exploration e = createExploration(10L, 1L);
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any())).thenReturn(1L);
+        when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
+        when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
+
+        myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, 999L, 10L, 1, 10);
+
+        verify(userExplorationMapper).findAllByCondition(1L, ExplorationStatus.COMPLETED, List.of(10L), 10, 0);
+        verify(explorationMapper, org.mockito.Mockito.never()).findIdsByCategoryId(any());
     }
 
     @Test
