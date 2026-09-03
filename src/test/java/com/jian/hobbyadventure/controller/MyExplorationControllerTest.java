@@ -6,6 +6,7 @@ import com.jian.hobbyadventure.common.response.PageMeta;
 import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
+import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.service.MyExplorationService;
@@ -42,7 +43,7 @@ class MyExplorationControllerTest {
         List<MyExplorationListItemResponse> data = List.of(
                 new MyExplorationListItemResponse(1L, 10L, "탐험 제목", "/images/test.jpg", 1L, "운동", "짧은 설명", ExplorationStatus.STARTED, LocalDateTime.now(), null, null)
         );
-        when(myExplorationService.getMyExplorations(anyLong(), any(), any(), anyInt(), anyInt()))
+        when(myExplorationService.getMyExplorations(anyLong(), any(), any(), any(), any(), anyInt(), anyInt()))
                 .thenReturn(PageResponse.of(data, PageMeta.of(1, 10, 1)));
 
         mockMvc.perform(get("/api/v1/my-explorations")
@@ -51,6 +52,19 @@ class MyExplorationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].title").value("탐험 제목"))
                 .andExpect(jsonPath("$.meta.totalElements").value(1));
+    }
+
+    @Test
+    void getCompletedExplorationCounts_성공_시_200을_반환한다() throws Exception {
+        when(myExplorationService.getCompletedExplorationCounts(1L))
+                .thenReturn(List.of(ExplorationCountResponse.from(10L, "탐험 제목", 3)));
+
+        mockMvc.perform(get("/api/v1/my-explorations/completed/exploration-counts")
+                        .header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].explorationId").value(10L))
+                .andExpect(jsonPath("$.data[0].title").value("탐험 제목"))
+                .andExpect(jsonPath("$.data[0].count").value(3));
     }
 
     @Test

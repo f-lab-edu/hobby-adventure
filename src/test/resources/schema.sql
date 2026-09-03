@@ -81,3 +81,27 @@ CREATE TABLE processed_view_events
     created_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (view_event_id)
 );
+
+CREATE TABLE waypoints
+(
+    id                  BIGINT    NOT NULL AUTO_INCREMENT,
+    user_exploration_id BIGINT    NOT NULL,
+    memo                TEXT,
+    place_name          VARCHAR(255),
+    checked_at          TIMESTAMP NOT NULL,
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_waypoints_user_exploration FOREIGN KEY (user_exploration_id) REFERENCES user_explorations (id)
+);
+
+CREATE TABLE waypoint_images
+(
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    waypoint_id BIGINT       NOT NULL,
+    image_url   VARCHAR(500) NOT NULL,
+    image_order INT          NOT NULL,
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_waypoint_images_waypoint FOREIGN KEY (waypoint_id) REFERENCES waypoints (id)
+);

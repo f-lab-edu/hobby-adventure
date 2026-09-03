@@ -16,6 +16,7 @@ import com.jian.hobbyadventure.dto.request.RecordSearchCondition;
 import com.jian.hobbyadventure.dto.request.UpdateRecordRequest;
 import com.jian.hobbyadventure.dto.response.CreateRecordResponse;
 import com.jian.hobbyadventure.dto.response.DeleteRecordResponse;
+import com.jian.hobbyadventure.dto.response.RecordArchiveCountResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
 import com.jian.hobbyadventure.dto.response.RecordImageResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
@@ -129,6 +130,17 @@ public class RecordService {
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
+    }
+
+    public List<RecordArchiveCountResponse> getArchiveCounts(Long userId, Long categoryId) {
+        List<Long> userExplorationIds = filterUserExplorationIds(userId, new RecordSearchCondition(categoryId, null));
+        if (userExplorationIds.isEmpty()) {
+            return List.of();
+        }
+
+        return recordMapper.countGroupByMonth(userExplorationIds).stream()
+                .map(row -> RecordArchiveCountResponse.from(row.getMonth(), row.getCount()))
+                .toList();
     }
 
     public RecordDetailResponse getRecord(Long userId, Long recordId) {

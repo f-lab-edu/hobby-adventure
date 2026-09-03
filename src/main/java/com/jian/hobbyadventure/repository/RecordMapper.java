@@ -55,6 +55,11 @@ public interface RecordMapper {
             "<foreach collection='userExplorationIds' item='id' open='(' separator=',' close=')'>#{id}</foreach></script>")
     List<Long> findUserExplorationIdsByUserExplorationIdIn(@Param("userExplorationIds") List<Long> userExplorationIds);
 
+    @Select("<script>SELECT DATE_FORMAT(visited_date, '%Y-%m') AS month, COUNT(*) AS count FROM records WHERE user_exploration_id IN " +
+            "<foreach collection='userExplorationIds' item='id' open='(' separator=',' close=')'>#{id}</foreach>" +
+            " GROUP BY month ORDER BY month</script>")
+    List<RecordMonthCountRow> countGroupByMonth(@Param("userExplorationIds") List<Long> userExplorationIds);
+
     @Delete("DELETE FROM records WHERE id = #{id}")
     void deleteById(Long id);
 }

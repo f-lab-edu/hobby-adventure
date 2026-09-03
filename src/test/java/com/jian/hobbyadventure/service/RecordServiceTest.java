@@ -17,10 +17,12 @@ import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.dto.response.RecordDetailResponse;
 import com.jian.hobbyadventure.dto.response.RecordListItemResponse;
 import com.jian.hobbyadventure.dto.response.UpdateRecordResponse;
+import com.jian.hobbyadventure.dto.response.RecordArchiveCountResponse;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordImageMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
+import com.jian.hobbyadventure.repository.RecordMonthCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -160,6 +162,45 @@ class RecordServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.IMAGE_LIMIT_EXCEEDED);
+    }
+
+    @Test
+    void getArchiveCounts_카테고리_필터_없으면_전체_기준으로_월별_개수를_반환한다() {
+        RecordMonthCountRow row = new RecordMonthCountRow();
+        row.setMonth("2026-09");
+        row.setCount(3);
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of(1L, 2L));
+        when(recordMapper.countGroupByMonth(List.of(1L, 2L))).thenReturn(List.of(row));
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getMonth()).isEqualTo("2026-09");
+        assertThat(result.get(0).getCount()).isEqualTo(3);
+    }
+
+    @Test
+    void getArchiveCounts_카테고리_필터가_있으면_그_카테고리_탐험의_기록만_집계한다() {
+        RecordMonthCountRow row = new RecordMonthCountRow();
+        row.setMonth("2026-09");
+        row.setCount(1);
+        when(explorationMapper.findIdsByCategoryId(5L)).thenReturn(List.of(10L));
+        when(userExplorationMapper.findIdsByUserIdAndExplorationIds(1L, List.of(10L))).thenReturn(List.of(1L));
+        when(recordMapper.countGroupByMonth(List.of(1L))).thenReturn(List.of(row));
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, 5L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getCount()).isEqualTo(1);
+    }
+
+    @Test
+    void getArchiveCounts_참여한_탐험이_없으면_빈목록을_반환한다() {
+        when(userExplorationMapper.findIdsByUserId(1L)).thenReturn(List.of());
+
+        List<RecordArchiveCountResponse> result = recordService.getArchiveCounts(1L, null);
+
+        assertThat(result).isEmpty();
     }
 
     @Test

@@ -61,6 +61,28 @@ public class ImageService {
         return keys;
     }
 
+    public List<String> saveWaypointImages(Long waypointId, List<MultipartFile> files) {
+        List<String> keys = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String ext = extractExtension(file.getOriginalFilename());
+            String key = "waypoints/" + waypointId + "/" + UUID.randomUUID() + ext;
+            try {
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(key)
+                                .contentType(file.getContentType())
+                                .build(),
+                        RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("S3 업로드 실패: " + key, e);
+            }
+            keys.add(key);
+        }
+        return keys;
+    }
+
     public void deleteImages(List<String> keys) {
         if (keys.isEmpty()) return;
 

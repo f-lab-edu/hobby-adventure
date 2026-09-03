@@ -4,6 +4,7 @@ import com.jian.hobbyadventure.common.response.CommonResponse;
 import com.jian.hobbyadventure.common.response.PageResponse;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
+import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
 import com.jian.hobbyadventure.service.MyExplorationService;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "MyExploration", description = "내 탐험 API")
 @RestController
@@ -29,9 +32,19 @@ public class MyExplorationController {
             @RequestHeader("X-User-Id") Long userId,
             @RequestParam ExplorationStatus status,
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long explorationId,
+            @RequestParam(required = false) Boolean hasRecord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(myExplorationService.getMyExplorations(userId, status, categoryId, page, size));
+        return ResponseEntity.ok(myExplorationService.getMyExplorations(userId, status, categoryId, explorationId, hasRecord, page, size));
+    }
+
+    @Operation(summary = "완료한 탐험을 탐험 단위로 묶은 개수 (탐험별 필터용)")
+    @ApiResponse(responseCode = "200", description = "조회 성공 (데이터 없을 경우 빈 배열 반환)")
+    @GetMapping("/completed/exploration-counts")
+    public ResponseEntity<CommonResponse<List<ExplorationCountResponse>>> getCompletedExplorationCounts(
+            @RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(CommonResponse.of(myExplorationService.getCompletedExplorationCounts(userId)));
     }
 
     @Operation(summary = "내 탐험 단건 조회")

@@ -23,6 +23,7 @@ public interface UserExplorationMapper {
             @Param("userId") Long userId,
             @Param("status") ExplorationStatus status,
             @Param("explorationIds") List<Long> explorationIds,
+            @Param("userExplorationIds") List<Long> userExplorationIds,
             @Param("size") int size,
             @Param("offset") int offset
     );
@@ -30,8 +31,13 @@ public interface UserExplorationMapper {
     long countByCondition(
             @Param("userId") Long userId,
             @Param("status") ExplorationStatus status,
-            @Param("explorationIds") List<Long> explorationIds
+            @Param("explorationIds") List<Long> explorationIds,
+            @Param("userExplorationIds") List<Long> userExplorationIds
     );
+
+    List<Long> findIdsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ExplorationStatus status);
+
+    List<UserExplorationCountRow> countGroupByExplorationId(@Param("userId") Long userId, @Param("status") ExplorationStatus status);
 
     @Select("SELECT * FROM user_explorations WHERE id = #{id}")
     Optional<UserExploration> findById(Long id);
