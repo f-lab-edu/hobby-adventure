@@ -41,7 +41,7 @@ class MyExplorationControllerTest {
     @Test
     void getMyExplorations_성공_시_200을_반환한다() throws Exception {
         List<MyExplorationListItemResponse> data = List.of(
-                new MyExplorationListItemResponse(1L, 10L, "탐험 제목", "/images/test.jpg", 1L, "운동", "짧은 설명", ExplorationStatus.STARTED, LocalDateTime.now(), null, null)
+                new MyExplorationListItemResponse(1L, 10L, "탐험 제목", "/images/test.jpg", 1L, "운동", "짧은 설명", ExplorationStatus.STARTED, LocalDateTime.now(), null, null, null, null, null)
         );
         when(myExplorationService.getMyExplorations(anyLong(), any(), any(), any(), any(), anyInt(), anyInt()))
                 .thenReturn(PageResponse.of(data, PageMeta.of(1, 10, 1)));
