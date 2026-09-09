@@ -8,21 +8,28 @@ import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.ImageSize;
 import com.jian.hobbyadventure.domain.Record;
 import com.jian.hobbyadventure.domain.UserExploration;
+import com.jian.hobbyadventure.domain.Waypoint;
+import com.jian.hobbyadventure.domain.WaypointImage;
 import com.jian.hobbyadventure.common.exception.BusinessException;
 import com.jian.hobbyadventure.common.exception.ErrorCode;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse;
+import com.jian.hobbyadventure.dto.response.MyExplorationListItemResponse.LastWaypointSummary;
 import com.jian.hobbyadventure.repository.CategoryMapper;
 import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
+import com.jian.hobbyadventure.repository.WaypointImageMapper;
+import com.jian.hobbyadventure.repository.WaypointMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +44,8 @@ public class MyExplorationService {
     private final ExplorationMapper explorationMapper;
     private final CategoryMapper categoryMapper;
     private final RecordMapper recordMapper;
+    private final WaypointMapper waypointMapper;
+    private final WaypointImageMapper waypointImageMapper;
     private final ImageService imageService;
 
     public PageResponse<MyExplorationListItemResponse> getMyExplorations(Long userId, ExplorationStatus status, Long categoryId, Long explorationId, Boolean hasRecord, int page, int size) {
@@ -59,30 +68,83 @@ public class MyExplorationService {
             }
         }
 
-        List<UserExploration> userExplorations = userExplorationMapper.findAllByCondition(userId, status, explorationIds, userExplorationIds, size, offset);
         long totalElements = userExplorationMapper.countByCondition(userId, status, explorationIds, userExplorationIds);
+        if (totalElements == 0) {
+            return PageResponse.of(List.of(), PageMeta.of(page, size, 0));
+        }
 
-        List<Long> ids = userExplorations.stream().map(UserExploration::getExplorationId).toList();
+        List<UserExploration> pageItems;
+        Map<Long, LastWaypointSummary> lastWaypointMap = Map.of();
+
+        if (status == ExplorationStatus.STARTED) {
+            // 마지막 여정일(없으면 시작일) 기준 정렬을 위해, 쿼리에서 waypoints를 직접 참조하는 대신
+            // 조건에 맞는 전체를 가져와서 Java에서 정렬 후 페이지만 잘라냄 (JOIN 금지 원칙과 같은 이유)
+            List<UserExploration> all = userExplorationMapper.findAllByCondition(userId, status, explorationIds, userExplorationIds, (int) totalElements, 0);
+            List<Long> allIds = all.stream().map(UserExploration::getId).toList();
+            lastWaypointMap = buildLastWaypointMap(allIds);
+
+            Map<Long, LastWaypointSummary> sortMap = lastWaypointMap;
+            pageItems = all.stream()
+                    .sorted(Comparator.comparing((UserExploration ue) -> lastActivityAt(ue, sortMap)).reversed()
+                            .thenComparing(UserExploration::getId, Comparator.reverseOrder()))
+                    .skip(offset)
+                    .limit(size)
+                    .toList();
+        } else {
+            pageItems = userExplorationMapper.findAllByCondition(userId, status, explorationIds, userExplorationIds, size, offset);
+        }
+
+        List<Long> ids = pageItems.stream().map(UserExploration::getExplorationId).toList();
         Map<Long, Exploration> explorationMap = ids.isEmpty() ? Map.of() :
                 explorationMapper.findByIdIn(ids).stream().collect(Collectors.toMap(Exploration::getId, e -> e));
 
         Map<Long, String> categoryNameMap = categoryMapper.findAll().stream()
                 .collect(Collectors.toMap(Category::getCategoryId, Category::getName));
 
-        List<Long> ueIds = userExplorations.stream().map(UserExploration::getId).toList();
+        List<Long> ueIds = pageItems.stream().map(UserExploration::getId).toList();
         Set<Long> hasRecordSet = ueIds.isEmpty() ? Set.of() :
                 new HashSet<>(recordMapper.findUserExplorationIdsByUserExplorationIdIn(ueIds));
 
-        List<MyExplorationListItemResponse> data = userExplorations.stream()
+        Map<Long, LastWaypointSummary> finalLastWaypointMap = lastWaypointMap;
+        List<MyExplorationListItemResponse> data = pageItems.stream()
                 .map(ue -> {
                     Exploration e = explorationMap.get(ue.getExplorationId());
                     String categoryName = categoryNameMap.get(e.getCategoryId());
                     Boolean rowHasRecord = toHasRecord(ue.getStatus(), hasRecordSet.contains(ue.getId()));
-                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e, ImageSize.LIST), rowHasRecord);
+                    return MyExplorationListItemResponse.from(ue, e, categoryName, resolveThumbnailUrl(e, ImageSize.LIST), rowHasRecord, finalLastWaypointMap.get(ue.getId()));
                 })
                 .toList();
 
         return PageResponse.of(data, PageMeta.of(page, size, totalElements));
+    }
+
+    // 진행중 카드 정렬 기준: 마지막 여정을 남긴 적 있으면 그 날짜, 없으면 시작일
+    private LocalDateTime lastActivityAt(UserExploration ue, Map<Long, LastWaypointSummary> lastWaypointMap) {
+        LastWaypointSummary summary = lastWaypointMap.get(ue.getId());
+        return summary != null ? summary.checkedAt() : ue.getCreatedAt();
+    }
+
+    // userExplorationId별 마지막 여정(대표 사진 1장 + 메모 + 날짜) 조회 — WaypointService.getWaypoints()와 동일한 방식으로 대표 사진 조립
+    private Map<Long, LastWaypointSummary> buildLastWaypointMap(List<Long> userExplorationIds) {
+        if (userExplorationIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Waypoint> latestWaypoints = waypointMapper.findLatestByUserExplorationIdIn(userExplorationIds);
+        if (latestWaypoints.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> waypointIds = latestWaypoints.stream().map(Waypoint::getId).toList();
+        Map<Long, List<WaypointImage>> imagesByWaypointId = waypointImageMapper.findAllByWaypointIds(waypointIds).stream()
+                .collect(Collectors.groupingBy(WaypointImage::getWaypointId));
+
+        return latestWaypoints.stream()
+                .collect(Collectors.toMap(Waypoint::getUserExplorationId, w -> {
+                    List<WaypointImage> images = imagesByWaypointId.getOrDefault(w.getId(), List.of());
+                    String thumbnailUrl = images.isEmpty() ? null : imageService.generateSignedCloudFrontUrl(images.get(0).getImageUrl(), ImageSize.LIST);
+                    return new LastWaypointSummary(w.getCheckedAt(), w.getMemo(), thumbnailUrl);
+                }));
     }
 
     // JOIN 없이: 완료한 전체 id를 먼저 뽑고, 그중 기록 있는 id를 recordMapper로 따로 조회해서 Java에서 차집합

@@ -16,6 +16,8 @@ import com.jian.hobbyadventure.repository.ExplorationMapper;
 import com.jian.hobbyadventure.repository.RecordMapper;
 import com.jian.hobbyadventure.repository.UserExplorationCountRow;
 import com.jian.hobbyadventure.repository.UserExplorationMapper;
+import com.jian.hobbyadventure.repository.WaypointImageMapper;
+import com.jian.hobbyadventure.repository.WaypointMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +47,10 @@ class MyExplorationServiceTest {
     private CategoryMapper categoryMapper;
     @Mock
     private RecordMapper recordMapper;
+    @Mock
+    private WaypointMapper waypointMapper;
+    @Mock
+    private WaypointImageMapper waypointImageMapper;
     @Mock
     private ImageService imageService;
 
