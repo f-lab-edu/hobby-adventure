@@ -44,6 +44,9 @@ public interface WaypointMapper {
     @Select("SELECT COUNT(*) FROM waypoints WHERE user_exploration_id = #{userExplorationId}")
     long countByUserExplorationId(Long userExplorationId);
 
+    // userExplorationId별 가장 최근 여정 1건씩만 (구현은 WaypointMapper.xml, 서브쿼리+윈도우함수라 XML로 분리)
+    List<Waypoint> findLatestByUserExplorationIdIn(@Param("userExplorationIds") List<Long> userExplorationIds);
+
     @Update("""
             UPDATE waypoints
             SET memo = #{memo}, place_name = #{placeName}, checked_at = #{checkedAt}, updated_at = NOW()

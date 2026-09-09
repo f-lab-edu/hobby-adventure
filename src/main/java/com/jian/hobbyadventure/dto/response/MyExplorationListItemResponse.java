@@ -23,8 +23,15 @@ public class MyExplorationListItemResponse {
     private final LocalDateTime startedAt;
     private final LocalDateTime completedAt;
     private final Boolean hasRecord;
+    private final LocalDateTime lastWaypointCheckedAt;
+    private final String lastWaypointMemo;
+    private final String lastWaypointThumbnailUrl;
 
     public static MyExplorationListItemResponse from(UserExploration ue, Exploration e, String categoryName, String thumbnailUrl, Boolean hasRecord) {
+        return from(ue, e, categoryName, thumbnailUrl, hasRecord, null);
+    }
+
+    public static MyExplorationListItemResponse from(UserExploration ue, Exploration e, String categoryName, String thumbnailUrl, Boolean hasRecord, LastWaypointSummary lastWaypoint) {
         return new MyExplorationListItemResponse(
                 ue.getId(),
                 e.getId(),
@@ -36,7 +43,13 @@ public class MyExplorationListItemResponse {
                 ue.getStatus(),
                 ue.getCreatedAt(),
                 ue.getCompletedAt(),
-                hasRecord
+                hasRecord,
+                lastWaypoint != null ? lastWaypoint.checkedAt() : null,
+                lastWaypoint != null ? lastWaypoint.memo() : null,
+                lastWaypoint != null ? lastWaypoint.thumbnailUrl() : null
         );
+    }
+
+    public record LastWaypointSummary(LocalDateTime checkedAt, String memo, String thumbnailUrl) {
     }
 }

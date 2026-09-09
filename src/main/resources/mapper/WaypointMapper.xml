@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jian.hobbyadventure.repository.WaypointMapper">
+
+    <!-- userExplorationId별 가장 최근 여정 1건씩만: waypoints 하나의 테이블에서
+         윈도우 함수로 그룹(user_exploration_id)당 최신 행만 골라냄 (JOIN 아님) -->
+    <select id="findLatestByUserExplorationIdIn" resultType="com.jian.hobbyadventure.domain.Waypoint">
+        SELECT id, user_exploration_id, memo, place_name, checked_at, created_at, updated_at FROM (
+            SELECT w.*, ROW_NUMBER() OVER (PARTITION BY w.user_exploration_id ORDER BY w.checked_at DESC, w.id DESC) AS rn
+            FROM waypoints w
+            WHERE w.user_exploration_id IN
+            <foreach collection="userExplorationIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        ) t WHERE t.rn = 1
+    </select>
+
+</mapper>
