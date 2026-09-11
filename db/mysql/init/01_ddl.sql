@@ -17,6 +17,7 @@ CREATE TABLE categories
     category_id   BIGINT      NOT NULL AUTO_INCREMENT,
     code          VARCHAR(50) NOT NULL,
     name          VARCHAR(50) NOT NULL,
+    icon          VARCHAR(10) NOT NULL DEFAULT '',
     display_order INT         NOT NULL,
     PRIMARY KEY (category_id),
     UNIQUE KEY uk_categories_code (code),

@@ -1,14 +1,19 @@
 SET NAMES 'utf8mb4';
 
-INSERT INTO categories (code, name, display_order)
-VALUES ('EXERCISE', '운동', 1),
-       ('VISIT', '방문', 2),
-       ('GATHERING', '모임', 3),
-       ('CREATION', '창작', 4),
-       ('LEARNING', '학습', 5),
-       ('APPRECIATION', '감상', 6),
-       ('REST', '휴식', 7),
-       ('ETC', '기타', 8);
+INSERT INTO categories (code, name, icon, display_order)
+VALUES ('EXERCISE', '운동/피트니스', '💪', 1),
+       ('COOKING', '요리/미식', '🍳', 2),
+       ('CRAFT', '공예/DIY', '🧶', 3),
+       ('ART', '예술/창작', '🎨', 4),
+       ('APPRECIATION', '문화예술 감상', '🎭', 5),
+       ('NATURE', '자연/아웃도어', '🏔️', 6),
+       ('TRAVEL', '여행/나들이', '✈️', 7),
+       ('GAME', '게임/보드게임', '🎲', 8),
+       ('COLLECTION', '수집/취향', '🗃️', 9),
+       ('GATHERING', '사교/모임', '👥', 10),
+       ('VOLUNTEER', '봉사/사회공헌', '🤝', 11),
+       ('LEARNING', '자기계발/학습', '📚', 12),
+       ('ETC', '기타', '🌟', 13);
 
 INSERT INTO explorations (category_id, title, thumbnail_url, short_description, description)
 VALUES (2, '한강 러닝 챌린지', 'explorations/running.jpg', '한강변을 따라 5km 달려보세요', '한강 둔치를 따라 이어지는 5km 러닝 코스입니다. 여의도 한강공원에서 출발해 반포대교까지 왕복하는 코스로, 탁 트인 강변 풍경을 즐기며 달릴 수 있습니다.'),

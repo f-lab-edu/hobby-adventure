@@ -11,12 +11,14 @@ public class CategoryResponse {
     private Long categoryId;
     private String code;
     private String name;
+    private String icon;
 
     public static CategoryResponse from(Category category) {
         return new CategoryResponse(
                 category.getCategoryId(),
                 category.getCode(),
-                category.getName()
+                category.getName(),
+                category.getIcon()
         );
     }
 }

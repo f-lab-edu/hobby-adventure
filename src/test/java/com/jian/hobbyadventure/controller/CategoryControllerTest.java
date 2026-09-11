@@ -27,8 +27,8 @@ class CategoryControllerTest {
     @Test
     void getCategories_성공_시_200을_반환한다() throws Exception {
         List<CategoryResponse> categories = List.of(
-                new CategoryResponse(1L, "EXERCISE", "운동"),
-                new CategoryResponse(2L, "VISIT", "방문")
+                new CategoryResponse(1L, "EXERCISE", "운동/피트니스", "💪"),
+                new CategoryResponse(2L, "COOKING", "요리/미식", "🍳")
         );
         when(categoryService.getCategories()).thenReturn(categories);
 
