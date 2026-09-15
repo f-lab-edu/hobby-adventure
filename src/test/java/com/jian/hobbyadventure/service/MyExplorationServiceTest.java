@@ -7,6 +7,7 @@ import com.jian.hobbyadventure.domain.Category;
 import com.jian.hobbyadventure.domain.Exploration;
 import com.jian.hobbyadventure.domain.ExplorationStatus;
 import com.jian.hobbyadventure.domain.UserExploration;
+import com.jian.hobbyadventure.domain.Waypoint;
 import com.jian.hobbyadventure.dto.response.CompleteExplorationResponse;
 import com.jian.hobbyadventure.dto.response.ExplorationCountResponse;
 import com.jian.hobbyadventure.dto.response.MyExplorationDetailResponse;
@@ -165,6 +166,27 @@ class MyExplorationServiceTest {
         assertThat(result.getData()).isEmpty();
         assertThat(result.getMeta().getTotalElements()).isZero();
         verify(userExplorationMapper, org.mockito.Mockito.never()).findAllByCondition(any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void getMyExplorations_COMPLETED도_마지막_여정_정보를_채운다() {
+        UserExploration ue = createUserExploration(2L, 1L, 10L, ExplorationStatus.COMPLETED);
+        Exploration e = createExploration(10L, 1L);
+        Waypoint waypoint = Waypoint.create(2L, "완주함, 뿌듯했다", "한강공원", LocalDateTime.now());
+        when(userExplorationMapper.findAllByCondition(anyLong(), any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(ue));
+        when(userExplorationMapper.countByCondition(anyLong(), any(), any(), any())).thenReturn(1L);
+        when(explorationMapper.findByIdIn(any())).thenReturn(List.of(e));
+        when(categoryMapper.findAll()).thenReturn(List.of(createCategory(1L, "운동")));
+        when(recordMapper.findUserExplorationIdsByUserExplorationIdIn(any())).thenReturn(List.of());
+        when(waypointMapper.findLatestByUserExplorationIdIn(List.of(2L))).thenReturn(List.of(waypoint));
+        when(waypointImageMapper.findAllByWaypointIds(any())).thenReturn(List.of());
+
+        PageResponse<MyExplorationListItemResponse> result =
+                myExplorationService.getMyExplorations(1L, ExplorationStatus.COMPLETED, null, null, null, 1, 10);
+
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getLastWaypointMemo()).isEqualTo("완주함, 뿌듯했다");
+        assertThat(result.getData().get(0).getLastWaypointCheckedAt()).isNotNull();
     }
 
     @Test
