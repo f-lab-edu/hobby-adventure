@@ -92,6 +92,12 @@ public class MyExplorationService {
                     .toList();
         } else {
             pageItems = userExplorationMapper.findAllByCondition(userId, status, explorationIds, userExplorationIds, size, offset);
+
+            if (status == ExplorationStatus.COMPLETED) {
+                // 완료 탭은 정렬 기준에 여정일을 쓰지 않으므로, 이미 페이징된 결과의 id만으로 조회
+                List<Long> pageIds = pageItems.stream().map(UserExploration::getId).toList();
+                lastWaypointMap = buildLastWaypointMap(pageIds);
+            }
         }
 
         List<Long> ids = pageItems.stream().map(UserExploration::getExplorationId).toList();
