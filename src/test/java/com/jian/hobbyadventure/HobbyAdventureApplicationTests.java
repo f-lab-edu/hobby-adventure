@@ -14,7 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 		"aws.sqs.region=ap-northeast-2",
 		"aws.sqs.access-key=test",
 		"aws.sqs.secret-key=test",
-		"aws.sqs.view-event-queue-url=http://localhost:4566/000000000000/test-queue"
+		"aws.sqs.view-event-queue-url=http://localhost:4566/000000000000/test-queue",
+		"aws.cloudfront.domain=test.cloudfront.net",
+		"aws.cloudfront.private-key-path=test-key.pem",
+		"aws.cloudfront.key-pair-id=test-key-pair-id"
 })
 class HobbyAdventureApplicationTests {
 
